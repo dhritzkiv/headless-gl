@@ -4,7 +4,7 @@ const tape = require('tape')
 const createContext = require('../index')
 
 tape('sync objects: fenceSync returns a WebGLSync', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0)
   t.equal(sync.constructor.name, 'WebGLSync', 'fenceSync returns a WebGLSync')
@@ -36,7 +36,7 @@ tape('sync objects: fenceSync returns a WebGLSync', function (t) {
 })
 
 tape('sync objects: clientWaitSync timeouts', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0)
   gl.finish()
 
@@ -71,8 +71,8 @@ tape('sync objects: WebGL1 has no MAX_CLIENT_WAIT_TIMEOUT_WEBGL', function (t) {
 })
 
 tape('sync objects: errors', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
-  const other = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
+  const other = createContext(1, 1, {}, { createWebGL2Context: true })
   const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0)
   const otherSync = other.fenceSync(other.SYNC_GPU_COMMANDS_COMPLETE, 0)
 

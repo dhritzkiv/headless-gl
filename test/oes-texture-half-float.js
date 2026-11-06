@@ -34,7 +34,7 @@ tape('OES_texture_half_float: availability', function (t) {
   t.equal(ext.HALF_FLOAT_OES, HALF_FLOAT_OES, 'HALF_FLOAT_OES')
   gl.getExtension('STACKGL_destroy_context').destroy()
 
-  const gl2 = createContext(1, 1, { createWebGL2Context: true })
+  const gl2 = createContext(1, 1, {}, { createWebGL2Context: true })
   t.equal(gl2.getExtension('OES_texture_half_float'), null, 'not available on WebGL2, which has half-float textures built in')
   gl2.getExtension('STACKGL_destroy_context').destroy()
   t.end()

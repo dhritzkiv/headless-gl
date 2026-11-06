@@ -9,7 +9,7 @@ tape('getExtension: unsupported extensions return null without printing anything
   const script = `
     const createContext = require(${JSON.stringify(path.join(__dirname, '..', 'index'))})
     const gl = createContext(1, 1)
-    const gl2 = createContext(1, 1, { createWebGL2Context: true })
+    const gl2 = createContext(1, 1, {}, { createWebGL2Context: true })
     console.error(JSON.stringify([
       gl.getExtension('EXT_color_buffer_float'),
       gl2.getExtension('OES_texture_float'),
@@ -27,7 +27,7 @@ tape('getExtension: supported extensions are enabled without printing anything',
   const script = `
     const createContext = require(${JSON.stringify(path.join(__dirname, '..', 'index'))})
     for (const webgl2 of [false, true]) {
-      const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+      const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
       for (const name of gl.getSupportedExtensions()) {
         if (!gl.getExtension(name)) {
           console.error(name + ' is null')

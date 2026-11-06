@@ -8,7 +8,7 @@ const WEBGL2_METHODS = [...WEBGL1_METHODS, 'deleteQuery', 'deleteSampler', 'dele
 
 for (const webgl2 of [false, true]) {
   tape(`delete objects: WebGL${webgl2 ? 2 : 1} delete methods do nothing for null`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
 
     const methods = (webgl2 ? WEBGL2_METHODS : WEBGL1_METHODS).map(name => [name, gl[name].bind(gl)])
     if (!webgl2) {
@@ -28,7 +28,7 @@ for (const webgl2 of [false, true]) {
 }
 
 tape('delete objects: deleteTexture unbinds 3D and 2D array textures from every texture unit', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   const texture3D = gl.createTexture()
   const texture2DArray = gl.createTexture()
@@ -53,7 +53,7 @@ tape('delete objects: deleteTexture unbinds 3D and 2D array textures from every 
 
 for (const webgl2 of [false, true]) {
   tape(`delete objects: WebGL${webgl2 ? 2 : 1} framebuffers that aren't bound keep deleted attachments`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
 
     const kinds = {
       renderbuffer: {
@@ -111,7 +111,7 @@ for (const webgl2 of [false, true]) {
 }
 
 tape('delete objects: WebGL2 FRAMEBUFFER_ATTACHMENT_OBJECT_NAME is null without an attachment', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, gl.createFramebuffer())
   t.equal(gl.getFramebufferAttachmentParameter(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.FRAMEBUFFER_ATTACHMENT_OBJECT_NAME), null, 'getFramebufferAttachmentParameter returns null')
@@ -123,7 +123,7 @@ tape('delete objects: WebGL2 FRAMEBUFFER_ATTACHMENT_OBJECT_NAME is null without 
 
 for (const webgl2 of [false, true]) {
   tape(`delete objects: WebGL${webgl2 ? 2 : 1} binding a deleted object sets INVALID_OPERATION`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
 
     // Each bind function, with how to make, delete and bind its objects, and read its binding.
     const binds = [

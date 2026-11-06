@@ -20,7 +20,7 @@ tape('WEBGL_color_buffer_float: availability', function (t) {
   t.equal(ext.UNSIGNED_NORMALIZED_EXT, 0x8C17, 'UNSIGNED_NORMALIZED_EXT')
   gl.getExtension('STACKGL_destroy_context').destroy()
 
-  const gl2 = createContext(1, 1, { createWebGL2Context: true })
+  const gl2 = createContext(1, 1, {}, { createWebGL2Context: true })
   t.equal(gl2.getExtension('WEBGL_color_buffer_float'), null, 'not available on WebGL2, which has EXT_color_buffer_float instead')
   gl2.getExtension('STACKGL_destroy_context').destroy()
   t.end()

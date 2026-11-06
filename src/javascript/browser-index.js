@@ -1,4 +1,4 @@
-function createContext (width, height, options) {
+function createContext (width, height, contextAttributes, options) {
   if (!((width | 0) > 0 && (height | 0) > 0)) {
     throw new RangeError(`Error creating WebGLContext: width and height must be at least 1, got ${width} and ${height}.`)
   }
@@ -19,7 +19,7 @@ function createContext (width, height, options) {
   /**
    * @type WebGLRenderingContext
    */
-  const gl = canvas.getContext(contextType, options)
+  const gl = canvas.getContext(contextType, contextAttributes)
   canvas.removeEventListener('webglcontextcreationerror', onCreationError)
 
   if (!gl) {

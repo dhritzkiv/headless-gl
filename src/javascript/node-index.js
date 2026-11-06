@@ -27,7 +27,7 @@ function powerPreference (options) {
   return value
 }
 
-function createContext (width, height, options) {
+function createContext (width, height, attributes, options) {
   if (!((width | 0) > 0 && (height | 0) > 0)) {
     throw new RangeError(`Error creating WebGLContext: width and height must be at least 1, got ${width} and ${height}.`)
   }
@@ -35,17 +35,17 @@ function createContext (width, height, options) {
   height = height | 0
 
   const contextAttributes = new WebGLContextAttributes(
-    flag(options, 'alpha', true),
-    flag(options, 'depth', true),
-    flag(options, 'stencil', false),
-    false, // flag(options, 'antialias', true),
-    flag(options, 'premultipliedAlpha', true),
-    flag(options, 'preserveDrawingBuffer', false),
-    powerPreference(options),
-    flag(options, 'failIfMajorPerformanceCaveat', false),
-    flag(options, 'desynchronized', false),
-    flag(options, 'xrCompatible', false),
-    flag(options, 'createWebGL2Context', false))
+    flag(attributes, 'alpha', true),
+    flag(attributes, 'depth', true),
+    flag(attributes, 'stencil', false),
+    false, // flag(attributes, 'antialias', true),
+    flag(attributes, 'premultipliedAlpha', true),
+    flag(attributes, 'preserveDrawingBuffer', false),
+    powerPreference(attributes),
+    flag(attributes, 'failIfMajorPerformanceCaveat', false),
+    flag(attributes, 'desynchronized', false),
+    flag(attributes, 'xrCompatible', false))
+  const createWebGL2Context = flag(options, 'createWebGL2Context', false)
 
   // Can only use premultipliedAlpha if alpha is set
   contextAttributes.premultipliedAlpha =
@@ -53,7 +53,7 @@ function createContext (width, height, options) {
 
   let ctx
   try {
-    ctx = new WebGLRenderingContextHelper(1, 1, contextAttributes.createWebGL2Context)
+    ctx = new WebGLRenderingContextHelper(1, 1, createWebGL2Context)
   } catch (e) {
     e.code = 'HEADLESS_GL_CONTEXT_CREATION_FAILED'
     throw e
@@ -77,7 +77,7 @@ function createContext (width, height, options) {
   ctx._checkStencil = false
   ctx._stencilState = true
 
-  if (contextAttributes.createWebGL2Context) {
+  if (createWebGL2Context) {
     ctx._vaos = {}
     ctx._activeVertexArrayObject = null
     ctx._queries = {}

@@ -6,7 +6,7 @@ const makeProgram = require('./util/make-program')
 
 for (const webgl2 of [false, true]) {
   tape(`draw elements: WebGL${webgl2 ? 2 : 1} negative offsets set INVALID_VALUE`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
     gl.useProgram(makeProgram(gl, 'attribute vec4 position;\nvoid main() {\n  gl_Position = position;\n}', 'void main() {\n  gl_FragColor = vec4(1.0);\n}'))
     // Instanced draws need an attribute without a divisor.
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())

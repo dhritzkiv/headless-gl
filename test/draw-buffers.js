@@ -22,7 +22,7 @@ tape('draw buffers: WebGL1 WEBGL_draw_buffers reports BACK for the default frame
 })
 
 tape('draw buffers: WebGL2 reports BACK for the default framebuffer', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   t.equal(gl.getParameter(gl.DRAW_BUFFER0), gl.BACK, 'DRAW_BUFFER0 is BACK')
   t.equal(gl.getParameter(gl.READ_BUFFER), gl.BACK, 'and READ_BUFFER')
@@ -48,7 +48,7 @@ tape('draw buffers: WebGL2 reports BACK for the default framebuffer', function (
 })
 
 tape('draw buffers: WebGL2 drawBuffers and readBuffer take BACK only for the default framebuffer', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   for (const buffers of [[gl.COLOR_ATTACHMENT0], [gl.BACK, gl.NONE], []]) {
     gl.drawBuffers(buffers)
@@ -115,7 +115,7 @@ tape('draw buffers: WebGL1 sets INVALID_ENUM for color attachments past the last
 })
 
 tape('draw buffers: WebGL2 sets INVALID_ENUM for color attachments past the last', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const max = gl.getParameter(gl.MAX_COLOR_ATTACHMENTS)
 
   const texture = gl.createTexture()

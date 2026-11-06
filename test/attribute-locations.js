@@ -19,7 +19,7 @@ void main() {
 
 for (const [webgl2, limit] of [[false, 256], [true, 1024]]) {
   tape(`attribute locations: WebGL${webgl2 ? 2 : 1} locations longer than ${limit} characters`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
 
     const name = 'a'.repeat(limit)
     const vertexShader = webgl2

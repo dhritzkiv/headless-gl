@@ -162,9 +162,17 @@ declare namespace createContext {
   };
 
   /**
-   * The WebGL context attributes, plus createWebGL2Context. Only alpha, depth, stencil and createWebGL2Context have an effect: antialias is always off, and the others are only reported by getContextAttributes. Nothing composites the drawing buffer in Node, so it's always preserved whatever preserveDrawingBuffer is.
+   * The WebGL context attributes. Only alpha, depth and stencil have an effect: antialias is always off, and the others are only reported by getContextAttributes. Nothing composites the drawing buffer in Node, so it's always preserved whatever preserveDrawingBuffer is.
    */
-  interface ContextAttributes extends WebGLContextAttributes {
+  type ContextAttributes = WebGLContextAttributes;
+
+  /**
+   * How to create the context, apart from its attributes.
+   */
+  interface Options {
+    /**
+     * Creates a WebGL2 context when it's true.
+     */
     createWebGL2Context?: boolean;
   }
 }
@@ -176,7 +184,8 @@ declare namespace createContext {
 declare function createContext(
   width: number,
   height: number,
-  options?: createContext.ContextAttributes & { createWebGL2Context?: false },
+  contextAttributes?: createContext.ContextAttributes,
+  options?: createContext.Options & { createWebGL2Context?: false },
 ): createContext.WebGLRenderingContext;
 
 /**
@@ -186,7 +195,8 @@ declare function createContext(
 declare function createContext(
   width: number,
   height: number,
-  options: createContext.ContextAttributes & { createWebGL2Context: true }
+  contextAttributes: createContext.ContextAttributes | undefined,
+  options: createContext.Options & { createWebGL2Context: true }
 ): createContext.WebGL2RenderingContext;
 
 /**
@@ -196,7 +206,8 @@ declare function createContext(
 declare function createContext(
   width: number,
   height: number,
-  options?: createContext.ContextAttributes
+  contextAttributes?: createContext.ContextAttributes,
+  options?: createContext.Options
 ): createContext.WebGLRenderingContext | createContext.WebGL2RenderingContext;
 
 export = createContext;

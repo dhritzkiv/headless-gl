@@ -5,7 +5,7 @@ const createContext = require('../index')
 
 for (const webgl2 of [false, true]) {
   tape(`readPixels: WebGL${webgl2 ? 2 : 1} into an array`, function (t) {
-    const gl = createContext(2, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(2, 1, {}, { createWebGL2Context: webgl2 })
     gl.clearColor(1, 0, 0, 1)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
@@ -19,7 +19,7 @@ for (const webgl2 of [false, true]) {
   })
 
   tape(`readPixels: WebGL${webgl2 ? 2 : 1} arrays too small for the pixels`, function (t) {
-    const gl = createContext(2, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(2, 1, {}, { createWebGL2Context: webgl2 })
     gl.clearColor(1, 0, 0, 1)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
@@ -34,7 +34,7 @@ for (const webgl2 of [false, true]) {
   })
 
   tape(`readPixels: WebGL${webgl2 ? 2 : 1} with no pixels to read or nowhere to put them`, function (t) {
-    const gl = createContext(2, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(2, 1, {}, { createWebGL2Context: webgl2 })
 
     gl.readPixels(0, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(0))
     t.equal(gl.getError(), gl.NO_ERROR, 'reading no pixels into an empty array sets no error')
@@ -55,7 +55,7 @@ for (const webgl2 of [false, true]) {
 }
 
 tape('readPixels: WebGL2 into a pixel pack buffer', function (t) {
-  const gl = createContext(2, 1, { createWebGL2Context: true })
+  const gl = createContext(2, 1, {}, { createWebGL2Context: true })
   gl.clearColor(1, 0, 0, 1)
   gl.clear(gl.COLOR_BUFFER_BIT)
 

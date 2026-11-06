@@ -8,7 +8,7 @@ const gl = createGL(1, 1)
 useContext(gl)
 useContext(gl as WebGLRenderingContext)
 
-const gl2 = createGL(1, 1, { createWebGL2Context: true })
+const gl2 = createGL(1, 1, {}, { createWebGL2Context: true })
 const context2: WebGL2RenderingContext = gl2 as WebGL2RenderingContext
 
 // DOM sources with a 2D context or pixel data still work as texture sources.

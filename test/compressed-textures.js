@@ -8,7 +8,7 @@ const COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0
 
 for (const webgl2 of [false, true]) {
   tape(`compressed textures: WebGL${webgl2 ? 2 : 1} without a compressed texture extension`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
     gl.bindTexture(gl.TEXTURE_2D, gl.createTexture())
 
     const formats = gl.getParameter(gl.COMPRESSED_TEXTURE_FORMATS)
@@ -55,7 +55,7 @@ const DXT5_RED = [102, 0, 0, 0, 0, 0, 0, 0, ...DXT1_RED]
 
 for (const webgl2 of [false, true]) {
   tape(`compressed textures: WebGL${webgl2 ? 2 : 1} WEBGL_compressed_texture_s3tc`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
     const ext = gl.getExtension('WEBGL_compressed_texture_s3tc')
     t.ok(ext, 'is available')
     t.deepEqual([...gl.getParameter(gl.COMPRESSED_TEXTURE_FORMATS)].sort(), [0x83F0, 0x83F1, 0x83F2, 0x83F3], 'COMPRESSED_TEXTURE_FORMATS lists its formats')
@@ -99,7 +99,7 @@ for (const webgl2 of [false, true]) {
 
 for (const webgl2 of [false, true]) {
   tape(`compressed textures: WebGL${webgl2 ? 2 : 1} WEBGL_compressed_texture_s3tc_srgb`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
     const ext = gl.getExtension('WEBGL_compressed_texture_s3tc_srgb')
     t.ok(ext, 'is available')
     t.deepEqual([...gl.getParameter(gl.COMPRESSED_TEXTURE_FORMATS)].sort(), [0x8C4C, 0x8C4D, 0x8C4E, 0x8C4F], 'COMPRESSED_TEXTURE_FORMATS lists its formats')
@@ -134,7 +134,7 @@ function rgtcBlock (value) {
 
 for (const webgl2 of [false, true]) {
   tape(`compressed textures: WebGL${webgl2 ? 2 : 1} EXT_texture_compression_rgtc`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
     const ext = gl.getExtension('EXT_texture_compression_rgtc')
     t.ok(ext, 'is available')
     t.deepEqual([...gl.getParameter(gl.COMPRESSED_TEXTURE_FORMATS)].sort(), [0x8DBB, 0x8DBC, 0x8DBD, 0x8DBE], 'COMPRESSED_TEXTURE_FORMATS lists its formats')
@@ -182,7 +182,7 @@ function bc7Block (rgba) {
 
 for (const webgl2 of [false, true]) {
   tape(`compressed textures: WebGL${webgl2 ? 2 : 1} EXT_texture_compression_bptc`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
     const ext = gl.getExtension('EXT_texture_compression_bptc')
     if (!ext && process.platform === 'darwin') {
       t.skip('ANGLE\'s OpenGL backend on macOS has no BPTC textures')
@@ -208,7 +208,7 @@ for (const webgl2 of [false, true]) {
 }
 
 tape('compressed textures: WebGL2 compressedTexImage3D and compressedTexSubImage3D', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const ext = gl.getExtension('WEBGL_compressed_texture_s3tc')
   const DXT1 = ext.COMPRESSED_RGB_S3TC_DXT1_EXT
 
@@ -250,7 +250,7 @@ void main() {
 })
 
 tape('compressed textures: WebGL2 uploads from the pixel unpack buffer', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const ext = gl.getExtension('WEBGL_compressed_texture_s3tc')
   const DXT1 = ext.COMPRESSED_RGB_S3TC_DXT1_EXT
 

@@ -23,7 +23,7 @@ function createTexture (gl) {
 }
 
 tape('UNPACK_FLIP_Y_WEBGL: WebGL2 formats and types', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
 
@@ -50,7 +50,7 @@ tape('UNPACK_FLIP_Y_WEBGL: WebGL2 formats and types', function (t) {
 })
 
 tape('UNPACK_FLIP_Y_WEBGL: WebGL2 UNPACK_ROW_LENGTH, UNPACK_SKIP_PIXELS and UNPACK_SKIP_ROWS', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   createTexture(gl)
 
   // Rows 2 pixels long, where the image is the second pixel of the second and third rows.

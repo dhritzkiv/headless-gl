@@ -7,7 +7,7 @@ const drawPixel = require('./util/draw-pixel')
 for (const webgl2 of [false, true]) {
   tape(`depth-buffer: WebGL${webgl2 ? 2 : 1} drawing buffers have 24-bit depth`, function (t) {
     for (const stencil of [false, true]) {
-      const gl = createContext(1, 1, { createWebGL2Context: webgl2, stencil })
+      const gl = createContext(1, 1, { stencil }, { createWebGL2Context: webgl2 })
       t.equal(gl.getParameter(gl.DEPTH_BITS), 24, `DEPTH_BITS is 24 ${stencil ? 'with' : 'without'} stencil, as in browsers`)
 
       // Mesa's llvmpipe loses 2 units of 32-bit depth, which is the smallest offset WebGL's conformance tests expect to work.

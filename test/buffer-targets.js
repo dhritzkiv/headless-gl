@@ -5,7 +5,7 @@ const createContext = require('../index')
 
 for (const webgl2 of [false, true]) {
   tape(`buffer targets: WebGL${webgl2 ? 2 : 1} bufferData and bufferSubData with a bad target or no buffer bound`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
 
     gl.bufferData(gl.TEXTURE_2D, 4, gl.STATIC_DRAW)
     t.equal(gl.getError(), gl.INVALID_ENUM, 'bufferData with a bad target sets INVALID_ENUM')
@@ -32,7 +32,7 @@ const WEBGL2_TARGETS = [
 ]
 
 tape('buffer targets: WebGL2 binds, fills and reports buffers at every target', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   for (const [target, binding] of WEBGL2_TARGETS) {
     const buffer = gl.createBuffer()
@@ -70,7 +70,7 @@ tape('buffer targets: WebGL2 binds, fills and reports buffers at every target', 
 })
 
 tape('buffer targets: WebGL2 keeps element array buffers apart from other data', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   const elements = gl.createBuffer()
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elements)
@@ -106,7 +106,7 @@ tape('buffer targets: WebGL1 has none of the WebGL2 targets', function (t) {
 tape('buffer targets: bufferData takes the WebGL2 usages only in WebGL2', function (t) {
   const usages = ['STREAM_READ', 'STREAM_COPY', 'STATIC_READ', 'STATIC_COPY', 'DYNAMIC_READ', 'DYNAMIC_COPY']
 
-  const gl2 = createContext(1, 1, { createWebGL2Context: true })
+  const gl2 = createContext(1, 1, {}, { createWebGL2Context: true })
   gl2.bindBuffer(gl2.ARRAY_BUFFER, gl2.createBuffer())
   for (const usage of usages) {
     gl2.bufferData(gl2.ARRAY_BUFFER, 4, gl2[usage])
@@ -125,7 +125,7 @@ tape('buffer targets: bufferData takes the WebGL2 usages only in WebGL2', functi
 })
 
 tape('buffer targets: getBufferSubData reads a buffer back', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   gl.bindBuffer(gl.COPY_READ_BUFFER, gl.createBuffer())
   gl.bufferData(gl.COPY_READ_BUFFER, new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]), gl.STATIC_DRAW)
 
@@ -148,7 +148,7 @@ tape('buffer targets: getBufferSubData reads a buffer back', function (t) {
 })
 
 tape('buffer targets: getBufferSubData with bad arguments', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const dst = new Uint8Array(4)
 
   gl.getBufferSubData(gl.TEXTURE_2D, 0, dst)

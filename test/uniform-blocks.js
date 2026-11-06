@@ -34,7 +34,7 @@ function createProgram (gl) {
 }
 
 tape('uniform blocks: drawing with a uniform buffer', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const program = createProgram(gl)
   gl.useProgram(program)
   gl.uniform1f(gl.getUniformLocation(program, 'scale'), 1)
@@ -61,7 +61,7 @@ tape('uniform blocks: drawing with a uniform buffer', function (t) {
 })
 
 tape('uniform blocks: getProgramParameter counts the active uniform blocks', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const program = createProgram(gl)
 
   t.equal(gl.getProgramParameter(program, gl.ACTIVE_UNIFORM_BLOCKS), 1, 'ACTIVE_UNIFORM_BLOCKS is 1')
@@ -72,7 +72,7 @@ tape('uniform blocks: getProgramParameter counts the active uniform blocks', fun
 })
 
 tape('uniform blocks: getActiveUniformBlockName', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const program = createProgram(gl)
 
   t.equal(gl.getActiveUniformBlockName(program, 0), 'Colors', 'returns the block\'s name')
@@ -87,7 +87,7 @@ tape('uniform blocks: getActiveUniformBlockName', function (t) {
 })
 
 tape('uniform blocks: getUniformIndices', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const program = createProgram(gl)
 
   const names = ['base', 'weights[0]', 'transform', 'scale', 'missing']
@@ -109,7 +109,7 @@ tape('uniform blocks: getUniformIndices', function (t) {
 })
 
 tape('uniform blocks: getActiveUniforms', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const program = createProgram(gl)
   const indices = gl.getUniformIndices(program, ['base', 'weights[0]', 'transform', 'scale'])
 
@@ -141,7 +141,7 @@ tape('uniform blocks: getActiveUniforms', function (t) {
 })
 
 tape('uniform blocks: getActiveUniformBlockParameter', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const program = createProgram(gl)
   const block = gl.getUniformBlockIndex(program, 'Colors')
 

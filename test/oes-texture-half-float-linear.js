@@ -18,7 +18,7 @@ tape('OES_texture_half_float_linear: availability', function (t) {
   t.ok(gl.getExtension('OES_texture_half_float_linear'), 'available on WebGL1')
   gl.getExtension('STACKGL_destroy_context').destroy()
 
-  const gl2 = createContext(1, 1, { createWebGL2Context: true })
+  const gl2 = createContext(1, 1, {}, { createWebGL2Context: true })
   t.equal(gl2.getExtension('OES_texture_half_float_linear'), null, 'not available on WebGL2, which filters half-float textures linearly without it')
   gl2.getExtension('STACKGL_destroy_context').destroy()
   t.end()

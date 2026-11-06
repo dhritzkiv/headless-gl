@@ -20,7 +20,9 @@ gl.canvas
 // @ts-expect-error WebGL1 contexts have no WebGL2 methods.
 gl.createVertexArray()
 
-const gl2 = createGL(1, 1, { createWebGL2Context: true, alpha: false })
+const gl2 = createGL(1, 1, { alpha: false }, { createWebGL2Context: true })
+// @ts-expect-error createWebGL2Context isn't a context attribute.
+createGL(1, 1, { createWebGL2Context: true })
 gl2.bindVertexArray(gl2.createVertexArray())
 const texture3D: number = WebGL2RenderingContext.TEXTURE_3D
 const textureCube: number = WebGLRenderingContext.TEXTURE_CUBE_MAP

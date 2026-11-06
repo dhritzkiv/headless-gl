@@ -30,7 +30,7 @@ function createUnpackBuffer (gl) {
 }
 
 tape('unpack buffer: texture uploads from an offset into the pixel unpack buffer', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   createUnpackBuffer(gl)
 
   createTexture(gl, gl.TEXTURE_2D)
@@ -51,7 +51,7 @@ tape('unpack buffer: texture uploads from an offset into the pixel unpack buffer
 })
 
 tape('unpack buffer: texture uploads that don\'t match the pixel unpack buffer binding', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   createTexture(gl, gl.TEXTURE_2D)
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, 0)
   t.equal(gl.getError(), gl.INVALID_OPERATION, 'an offset without a pixel unpack buffer sets INVALID_OPERATION')

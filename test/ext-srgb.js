@@ -32,7 +32,7 @@ tape('EXT_sRGB: availability', function (t) {
   t.equal(ext.FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT, 0x8210, 'FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT')
   gl.getExtension('STACKGL_destroy_context').destroy()
 
-  const gl2 = createContext(1, 1, { createWebGL2Context: true })
+  const gl2 = createContext(1, 1, {}, { createWebGL2Context: true })
   t.equal(gl2.getExtension('EXT_sRGB'), null, 'not available on WebGL2, which has sRGB formats built in')
   gl2.getExtension('STACKGL_destroy_context').destroy()
   t.end()

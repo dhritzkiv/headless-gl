@@ -8,7 +8,7 @@ const MIRROR_CLAMP_TO_EDGE_EXT = 0x8743
 
 for (const webgl2 of [false, true]) {
   tape(`EXT_texture_mirror_clamp_to_edge: WebGL${webgl2 ? 2 : 1}`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
 
     // A red texel and a green texel.
     gl.bindTexture(gl.TEXTURE_2D, gl.createTexture())

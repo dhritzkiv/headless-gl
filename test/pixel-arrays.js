@@ -57,7 +57,7 @@ tape('pixel arrays: WebGL1 texture uploads take only the typed array of their ty
 })
 
 tape('pixel arrays: WebGL2 texture uploads take only the typed array of their type', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const texture2D = gl.createTexture()
   const texture3D = gl.createTexture()
   gl.bindTexture(gl.TEXTURE_2D, texture2D)
@@ -114,7 +114,7 @@ tape('pixel arrays: WebGL2 texture uploads take only the typed array of their ty
 
 for (const webgl2 of [false, true]) {
   tape(`pixel arrays: WebGL${webgl2 ? 2 : 1} readPixels takes only the typed array of its type`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
     gl.clearColor(1, 0.4, 0, 1)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
@@ -171,7 +171,7 @@ tape('pixel arrays: WebGL1 throws a TypeError for pixel data that isn\'t a typed
 })
 
 tape('pixel arrays: WebGL2 takes pixel data that isn\'t a typed array as an offset into a pixel buffer, where its forms take one', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const texture2D = gl.createTexture()
   gl.bindTexture(gl.TEXTURE_2D, texture2D)
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)

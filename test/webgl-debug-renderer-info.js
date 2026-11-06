@@ -8,7 +8,7 @@ const UNMASKED_RENDERER_WEBGL = 0x9246
 
 for (const webgl2 of [false, true]) {
   tape(`WEBGL_debug_renderer_info: WebGL${webgl2 ? 2 : 1}`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
 
     t.equal(gl.getParameter(UNMASKED_RENDERER_WEBGL), null, 'getParameter returns null before the extension is enabled')
     t.equal(gl.getError(), gl.INVALID_ENUM, 'and sets INVALID_ENUM')

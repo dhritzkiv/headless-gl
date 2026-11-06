@@ -23,7 +23,7 @@ void main() {
 }
 
 tape('srcOffset: texture uploads start srcOffset elements into the data', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   // A pixel to skip, then the pixel to upload.
   const bytes = new Uint8Array([9, 9, 9, 9, 255, 102, 0, 255])
 
@@ -51,7 +51,7 @@ tape('srcOffset: texture uploads start srcOffset elements into the data', functi
 })
 
 tape('srcOffset: texture uploads without enough data after srcOffset', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const bytes = new Uint8Array(8)
 
   createTexture(gl, gl.TEXTURE_2D)
@@ -99,7 +99,7 @@ void main() {
 }
 
 tape('srcOffset: bufferData and bufferSubData copy length elements from srcOffset', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const buffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
 
@@ -144,7 +144,7 @@ void main() {
 }
 
 tape('srcOffset: uniform methods take srcLength elements from srcOffset', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const orange = [255, 102, 0, 255]
 
   t.deepEqual(drawUniform(gl, 'vec4', 'u', location => gl.uniform4fv(location, new Float32Array([0, 0, 0, 0, 1, 0.4, 0, 1]), 4)), orange, 'uniform4fv with srcOffset')
@@ -166,7 +166,7 @@ tape('srcOffset: uniform methods take srcLength elements from srcOffset', functi
 })
 
 tape('srcOffset: clearBuffer methods read their values from srcOffset', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const pixel = new Uint8Array(4)
 
   gl.clearBufferfv(gl.COLOR, 0, new Float32Array([0, 0, 0, 0, 1, 0.4, 0, 1]), 4)
@@ -192,7 +192,7 @@ tape('srcOffset: clearBuffer methods read their values from srcOffset', function
 })
 
 tape('dstOffset: readPixels writes dstOffset elements into its array', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   gl.clearColor(1, 0.4, 0, 1)
   gl.clear(gl.COLOR_BUFFER_BIT)
 

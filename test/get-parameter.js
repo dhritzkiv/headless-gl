@@ -18,7 +18,7 @@ tape('getParameter: WebGL1 capabilities are booleans', function (t) {
 })
 
 tape('getParameter: WebGL2 capabilities and transform feedback states are booleans', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   for (const name of ['SAMPLE_ALPHA_TO_COVERAGE', 'SAMPLE_COVERAGE', 'RASTERIZER_DISCARD']) {
     t.equal(gl.getParameter(gl[name]), false, `${name} is false by default`)
@@ -34,7 +34,7 @@ tape('getParameter: WebGL2 capabilities and transform feedback states are boolea
 })
 
 tape('getParameter: WebGL2 texture and vertex array bindings are objects', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   const texture3D = gl.createTexture()
   const texture2DArray = gl.createTexture()

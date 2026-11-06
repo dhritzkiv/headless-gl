@@ -17,7 +17,7 @@ tape('EXT_frag_depth: availability', function (t) {
   t.ok(gl.getExtension('EXT_frag_depth'), 'available on WebGL1')
   gl.getExtension('STACKGL_destroy_context').destroy()
 
-  const gl2 = createContext(1, 1, { createWebGL2Context: true })
+  const gl2 = createContext(1, 1, {}, { createWebGL2Context: true })
   t.equal(gl2.getExtension('EXT_frag_depth'), null, 'not available on WebGL2, where GLSL ES 3.00 has gl_FragDepth')
   gl2.getExtension('STACKGL_destroy_context').destroy()
   t.end()

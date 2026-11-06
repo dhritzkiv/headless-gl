@@ -40,7 +40,7 @@ tape('WEBGL_depth_texture: availability', function (t) {
   t.equal(ext.UNSIGNED_INT_24_8_WEBGL, UNSIGNED_INT_24_8_WEBGL, 'UNSIGNED_INT_24_8_WEBGL')
   gl.getExtension('STACKGL_destroy_context').destroy()
 
-  const gl2 = createContext(1, 1, { createWebGL2Context: true })
+  const gl2 = createContext(1, 1, {}, { createWebGL2Context: true })
   t.equal(gl2.getExtension('WEBGL_depth_texture'), null, 'not available on WebGL2, which has depth textures built in')
   gl2.getExtension('STACKGL_destroy_context').destroy()
   t.end()

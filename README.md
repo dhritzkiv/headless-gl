@@ -72,11 +72,12 @@ const gl = createGL(width, height)
 
 * `width` is the width of the drawing buffer
 * `height` is the height of the drawing buffer
-* `contextAttributes` is an optional object whose properties are the [WebGL context attributes](https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.2), and `createWebGL2Context`, which creates a WebGL2 context when it's `true`. Only `alpha`, `depth` and `stencil` change the drawing buffer, and `antialias` is always off. Nothing composites the drawing buffer in Node, so it's always preserved whatever `preserveDrawingBuffer` is. The rest, such as `premultipliedAlpha`, only change what `getContextAttributes` reports.
+* `contextAttributes` is an optional object whose properties are the [WebGL context attributes](https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.2). Only `alpha`, `depth` and `stencil` change the drawing buffer, and `antialias` is always off. Nothing composites the drawing buffer in Node, so it's always preserved whatever `preserveDrawingBuffer` is. The rest, such as `premultipliedAlpha`, only change what `getContextAttributes` reports.
+* `options` is an optional object whose `createWebGL2Context` property creates a WebGL2 context when it's `true`.
 
 If `width` or `height` is larger than the GPU allows, the drawing buffer is made as large as it allows, as in browsers, and `gl.drawingBufferWidth` and `gl.drawingBufferHeight` give its size. The `STACKGL_resize_drawingbuffer` extension does the same.
 
-**Returns** A new `WebGLRenderingContext` object, or a `WebGL2RenderingContext` when `createWebGL2Context` is `true`.
+**Returns** A new `WebGLRenderingContext` object, or a `WebGL2RenderingContext` when `options.createWebGL2Context` is `true`.
 
 **Throws** an `Error` with the code `HEADLESS_GL_CONTEXT_CREATION_FAILED` if the context can't be created, for example when a library that ANGLE needs isn't installed. The error message gives the reason, such as the name of the missing library. Throws a `RangeError` if `width` or `height` is less than 1.
 
@@ -173,7 +174,11 @@ Immediately destroys the context and all associated resources.
 
 ### WebGL2
 
-To create a WebGL2 context, set the `createWebGL2Context` property to `true` in the `contextAttributes` argument.
+To create a WebGL2 context, set the `createWebGL2Context` property to `true` in the `options` argument:
+
+```javascript
+const gl = createGL(width, height, {}, { createWebGL2Context: true })
+```
 
 Every WebGL2 method is implemented, but WebGL2 hasn't been tested against the [WebGL 2.0 conformance suite](https://www.khronos.org/registry/webgl/conformance-suites/2.0.0/webgl-conformance-tests.html) yet.
 

@@ -14,7 +14,7 @@ void main() {
 }`
 
 tape('samplers: createSampler returns a WebGLSampler', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   const sampler = gl.createSampler()
   t.equal(sampler.constructor.name, 'WebGLSampler', 'createSampler returns a WebGLSampler')
@@ -57,7 +57,7 @@ tape('samplers: createSampler returns a WebGLSampler', function (t) {
 })
 
 tape('samplers: a bound sampler overrides the texture\'s parameters', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   const texture = gl.createTexture()
   gl.bindTexture(gl.TEXTURE_2D, texture)
@@ -82,8 +82,8 @@ tape('samplers: a bound sampler overrides the texture\'s parameters', function (
 })
 
 tape('samplers: errors', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
-  const other = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
+  const other = createContext(1, 1, {}, { createWebGL2Context: true })
   const sampler = gl.createSampler()
   const otherSampler = other.createSampler()
 

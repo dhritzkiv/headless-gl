@@ -73,7 +73,7 @@ tape('image uploads: WebGL1 formats and types', function (t) {
 })
 
 tape('image uploads: WebGL2 formats and types', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const color = image([102, 51, 0, 204])
 
   const cases = [
@@ -136,7 +136,7 @@ tape('image uploads: UNPACK_FLIP_Y_WEBGL and UNPACK_PREMULTIPLY_ALPHA_WEBGL', fu
 })
 
 tape('image uploads: texSubImage2D, texSubImage3D and canvases', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const color = image([102, 51, 0, 204])
 
   createTexture(gl)
@@ -167,7 +167,7 @@ void main() {
 })
 
 tape('image uploads: unpack parameters', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   createTexture(gl)
 
   // Images ignore these, and keep them for later uploads.
@@ -223,7 +223,7 @@ void main() {
 }
 
 tape('image uploads: WebGL2 sub-rectangles of images', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   // UNPACK_SKIP_PIXELS and UNPACK_SKIP_ROWS place a width by height rectangle in the image.
   const cases = [
@@ -266,7 +266,7 @@ tape('image uploads: WebGL2 sub-rectangles of images', function (t) {
 })
 
 tape('image uploads: WebGL2 slices of images in 3D textures', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   // An image 1 pixel wide, whose four rows are red, green, blue and cyan from the top.
   const column = { width: 1, height: 4, data: new Uint8ClampedArray([...RED, ...GREEN, ...BLUE, ...CYAN]) }
 

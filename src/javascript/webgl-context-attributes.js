@@ -9,8 +9,7 @@ class WebGLContextAttributes {
     powerPreference,
     failIfMajorPerformanceCaveat,
     desynchronized,
-    xrCompatible,
-    createWebGL2Context) {
+    xrCompatible) {
     this.alpha = alpha
     this.depth = depth
     this.stencil = stencil
@@ -21,7 +20,6 @@ class WebGLContextAttributes {
     this.failIfMajorPerformanceCaveat = failIfMajorPerformanceCaveat
     this.desynchronized = desynchronized
     this.xrCompatible = xrCompatible
-    this.createWebGL2Context = createWebGL2Context
   }
 }
 

@@ -14,7 +14,7 @@ function readFloatPixel (gl) {
 
 for (const webgl2 of [false, true]) {
   tape(`EXT_color_buffer_half_float: WebGL${webgl2 ? 2 : 1} RGBA16F renderbuffers`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
     const renderbuffer = gl.createRenderbuffer()
     gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer)
 
@@ -45,7 +45,7 @@ for (const webgl2 of [false, true]) {
 }
 
 tape('EXT_color_buffer_half_float: WebGL2 RGBA16F textures', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const texture = gl.createTexture()
   gl.bindTexture(gl.TEXTURE_2D, texture)
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, 1, 1, 0, gl.RGBA, gl.HALF_FLOAT, null)

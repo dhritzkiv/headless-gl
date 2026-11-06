@@ -12,7 +12,7 @@ void main() {
 }`
 
 tape('queries: createQuery returns a WebGLQuery', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   const query = gl.createQuery()
   t.equal(query.constructor.name, 'WebGLQuery', 'createQuery returns a WebGLQuery')
@@ -42,7 +42,7 @@ tape('queries: createQuery returns a WebGLQuery', function (t) {
 })
 
 tape('queries: occlusion query results', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   const drawn = gl.createQuery()
   gl.beginQuery(gl.ANY_SAMPLES_PASSED, drawn)
@@ -70,7 +70,7 @@ tape('queries: occlusion query results', function (t) {
 })
 
 tape('queries: deleting an active query ends it', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   const query = gl.createQuery()
   gl.beginQuery(gl.ANY_SAMPLES_PASSED, query)
@@ -85,8 +85,8 @@ tape('queries: deleting an active query ends it', function (t) {
 })
 
 tape('queries: errors', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
-  const other = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
+  const other = createContext(1, 1, {}, { createWebGL2Context: true })
   const query = gl.createQuery()
   const otherQuery = other.createQuery()
   other.beginQuery(other.ANY_SAMPLES_PASSED, otherQuery)

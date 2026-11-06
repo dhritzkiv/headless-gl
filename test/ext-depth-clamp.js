@@ -21,7 +21,7 @@ void main() {
 
 for (const webgl2 of [false, true]) {
   tape(`EXT_depth_clamp: WebGL${webgl2 ? 2 : 1}`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
 
     gl.enable(DEPTH_CLAMP_EXT)
     t.equal(gl.getError(), gl.INVALID_ENUM, 'enable sets INVALID_ENUM before it is enabled')

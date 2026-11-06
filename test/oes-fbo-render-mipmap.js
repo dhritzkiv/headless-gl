@@ -14,7 +14,7 @@ tape('OES_fbo_render_mipmap: availability', function (t) {
   t.ok(gl.getExtension('OES_fbo_render_mipmap'), 'available on WebGL1')
   gl.getExtension('STACKGL_destroy_context').destroy()
 
-  const gl2 = createContext(1, 1, { createWebGL2Context: true })
+  const gl2 = createContext(1, 1, {}, { createWebGL2Context: true })
   t.equal(gl2.getExtension('OES_fbo_render_mipmap'), null, 'not available on WebGL2, which can render to any mipmap level')
   gl2.getExtension('STACKGL_destroy_context').destroy()
   t.end()

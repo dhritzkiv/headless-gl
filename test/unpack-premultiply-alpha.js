@@ -53,7 +53,7 @@ tape('UNPACK_PREMULTIPLY_ALPHA_WEBGL: WebGL1 packed types', function (t) {
 })
 
 tape('UNPACK_PREMULTIPLY_ALPHA_WEBGL: WebGL2 types', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   t.deepEqual(premultiplied(gl, gl.RGBA16F, gl.RGBA, gl.HALF_FLOAT, new Uint16Array(HALF_COLOR)), [102, 51, 0, 102], 'RGBA16F HALF_FLOAT')
   t.deepEqual(premultiplied(gl, gl.RGBA32F, gl.RGBA, gl.FLOAT, new Float32Array([1, 0.5, 0, 0.4])), [102, 51, 0, 102], 'RGBA32F FLOAT')

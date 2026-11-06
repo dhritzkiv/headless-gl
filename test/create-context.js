@@ -29,7 +29,7 @@ tape('create context with only the methods of its WebGL version', function (t) {
   t.deepEqual(Object.getOwnPropertyNames(gl).filter(name => name.startsWith('_')), [], 'has no internals')
   gl.getExtension('STACKGL_destroy_context').destroy()
 
-  const gl2 = createContext(1, 1, { createWebGL2Context: true })
+  const gl2 = createContext(1, 1, {}, { createWebGL2Context: true })
   t.ok(gl2 instanceof createContext.WebGL2RenderingContext, 'is a WebGL2RenderingContext')
   t.equal(Object.prototype.toString.call(gl2), '[object WebGL2RenderingContext]', 'has the WebGL2RenderingContext string tag')
   t.equal(typeof gl2.drawArrays, 'function', 'WebGL2 has WebGL1 methods')
@@ -39,6 +39,18 @@ tape('create context with only the methods of its WebGL version', function (t) {
   t.deepEqual(constants.filter(name => createContext.WebGL2RenderingContext[name] !== gl2[name]), [], 'WebGL2RenderingContext has every constant as a static property')
   t.equal(createContext.WebGLRenderingContext.TEXTURE_3D, undefined, 'WebGLRenderingContext has no WebGL2 constants as static properties')
   gl2.getExtension('STACKGL_destroy_context').destroy()
+  t.end()
+})
+
+tape('create context: createWebGL2Context is an option, not a context attribute', function (t) {
+  const gl2 = createContext(1, 1, {}, { createWebGL2Context: true })
+  t.ok(gl2 instanceof createContext.WebGL2RenderingContext, 'the options argument creates a WebGL2 context')
+  t.notOk('createWebGL2Context' in gl2.getContextAttributes(), 'which getContextAttributes doesn\'t report')
+  gl2.getExtension('STACKGL_destroy_context').destroy()
+
+  const gl = createContext(1, 1, { createWebGL2Context: true })
+  t.notOk(gl instanceof createContext.WebGL2RenderingContext, 'the context attributes don\'t')
+  gl.getExtension('STACKGL_destroy_context').destroy()
   t.end()
 })
 
@@ -70,9 +82,8 @@ tape('create context: getContextAttributes reports the standard attributes', fun
     powerPreference: 'default',
     failIfMajorPerformanceCaveat: false,
     desynchronized: false,
-    xrCompatible: false,
-    createWebGL2Context: false
-  }, 'with their defaults, and createWebGL2Context')
+    xrCompatible: false
+  }, 'with their defaults')
   gl.getExtension('STACKGL_destroy_context').destroy()
 
   for (const value of ['low-power', 'high-performance']) {

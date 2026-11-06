@@ -21,7 +21,7 @@ void main() {
 
 for (const webgl2 of [false, true]) {
   tape(`uniform locations: WebGL${webgl2 ? 2 : 1} array uniforms named without [0]`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
 
     let location = null
     const pixel = drawPixel(gl, FRAGMENT_SHADERS[webgl2 ? 'webgl2' : 'webgl1'], program => {
@@ -57,7 +57,7 @@ ${webgl2 ? 'out vec4 color;\n' : ''}void main() {
 
 for (const [webgl2, limit] of [[false, 256], [true, 1024]]) {
   tape(`uniform locations: WebGL${webgl2 ? 2 : 1} locations longer than ${limit} characters`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
 
     const longest = longUniform(webgl2, limit)
     const pixel = drawPixel(gl, longest.fragmentShader, program => {

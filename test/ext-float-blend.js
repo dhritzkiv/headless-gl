@@ -46,7 +46,7 @@ function blend (gl, webgl2) {
 
 for (const webgl2 of [false, true]) {
   tape(`EXT_float_blend: WebGL${webgl2 ? 2 : 1}`, function (t) {
-    const gl = createContext(1, 1, { createWebGL2Context: webgl2 })
+    const gl = createContext(1, 1, {}, { createWebGL2Context: webgl2 })
     const colorBufferExtension = webgl2 ? 'EXT_color_buffer_float' : 'OES_texture_float'
     gl.getExtension(colorBufferExtension)
 

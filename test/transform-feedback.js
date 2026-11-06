@@ -65,7 +65,7 @@ function readBuffer (gl, buffer, length) {
 }
 
 tape('transform feedback: transformFeedbackVaryings and getTransformFeedbackVarying take a WebGLProgram', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const program = createProgram(gl, VARYINGS, gl.INTERLEAVED_ATTRIBS)
 
   t.equal(gl.getProgramParameter(program, gl.TRANSFORM_FEEDBACK_VARYINGS), 2, 'getProgramParameter counts the varyings the program captures')
@@ -85,7 +85,7 @@ tape('transform feedback: transformFeedbackVaryings and getTransformFeedbackVary
 })
 
 tape('transform feedback: capturing varyings', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   const interleaved = createBuffer(gl, 6 * 4)
   capture(gl, createProgram(gl, VARYINGS, gl.INTERLEAVED_ATTRIBS), [interleaved], 3)
@@ -103,8 +103,8 @@ tape('transform feedback: capturing varyings', function (t) {
 })
 
 tape('transform feedback: transformFeedbackVaryings and getTransformFeedbackVarying errors', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
-  const other = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
+  const other = createContext(1, 1, {}, { createWebGL2Context: true })
   const program = gl.createProgram()
 
   t.throws(() => gl.transformFeedbackVaryings(1, VARYINGS, gl.SEPARATE_ATTRIBS), TypeError, 'transformFeedbackVaryings throws a TypeError for a program that isn\'t an object')
@@ -131,7 +131,7 @@ tape('transform feedback: transformFeedbackVaryings and getTransformFeedbackVary
 })
 
 tape('transform feedback: createTransformFeedback returns a WebGLTransformFeedback', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
 
   const transformFeedback = gl.createTransformFeedback()
   t.equal(transformFeedback.constructor.name, 'WebGLTransformFeedback', 'createTransformFeedback returns a WebGLTransformFeedback')
@@ -150,7 +150,7 @@ tape('transform feedback: createTransformFeedback returns a WebGLTransformFeedba
 })
 
 tape('transform feedback: each transform feedback object captures into its own buffers', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const program = createProgram(gl, VARYINGS, gl.INTERLEAVED_ATTRIBS)
   const first = gl.createTransformFeedback()
   const second = gl.createTransformFeedback()
@@ -190,7 +190,7 @@ tape('transform feedback: each transform feedback object captures into its own b
 })
 
 tape('transform feedback: deleting transform feedback objects', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
   const program = createProgram(gl, VARYINGS, gl.INTERLEAVED_ATTRIBS)
   const transformFeedback = gl.createTransformFeedback()
 
@@ -219,8 +219,8 @@ tape('transform feedback: deleting transform feedback objects', function (t) {
 })
 
 tape('transform feedback: transform feedback object errors', function (t) {
-  const gl = createContext(1, 1, { createWebGL2Context: true })
-  const other = createContext(1, 1, { createWebGL2Context: true })
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
+  const other = createContext(1, 1, {}, { createWebGL2Context: true })
   gl.createTransformFeedback()
   const otherTransformFeedback = other.createTransformFeedback()
   other.bindTransformFeedback(other.TRANSFORM_FEEDBACK, otherTransformFeedback)

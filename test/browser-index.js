@@ -31,9 +31,10 @@ function withDocument (createGL, test) {
   }
 }
 
-function fakeGL (type, canvas) {
+function fakeGL (type, options, canvas) {
   return {
     type,
+    options,
     canvas,
     getExtension: function () {
       return null
@@ -46,7 +47,7 @@ function fakeGL (type, canvas) {
 
 tape('browser: create context', function (t) {
   withDocument(function (type, options, canvas) {
-    return fakeGL(type, canvas)
+    return fakeGL(type, options, canvas)
   }, function () {
     const gl = createContext(10, 20)
     t.equal(gl.type, 'webgl')
@@ -57,7 +58,9 @@ tape('browser: create context', function (t) {
     t.equal(gl.canvas.width, 30)
     t.equal(gl.canvas.height, 40)
 
-    t.equal(createContext(10, 20, { createWebGL2Context: true }).type, 'webgl2')
+    const gl2 = createContext(10, 20, { alpha: false }, { createWebGL2Context: true })
+    t.equal(gl2.type, 'webgl2')
+    t.deepEqual(gl2.options, { alpha: false }, 'getContext gets only the context attributes')
   })
   t.end()
 })
