@@ -1,3 +1,14 @@
+function createCanvas (width, height) {
+  if (typeof document !== 'undefined') {
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    return canvas
+  }
+  // Workers have no document, but have OffscreenCanvas.
+  return new globalThis.OffscreenCanvas(width, height)
+}
+
 function createContext (width, height, contextAttributes, options) {
   if (!((width | 0) > 0 && (height | 0) > 0)) {
     throw new RangeError(`Error creating WebGLContext: width and height must be at least 1, got ${width} and ${height}.`)
@@ -5,9 +16,7 @@ function createContext (width, height, contextAttributes, options) {
   width = width | 0
   height = height | 0
 
-  const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
+  const canvas = createCanvas(width, height)
 
   // The browser reports why it couldn't create a context in this event, which fires before getContext returns null.
   let statusMessage = ''

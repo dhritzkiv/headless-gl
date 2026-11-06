@@ -3,31 +3,48 @@
 const tape = require('tape')
 const createContext = require('../src/javascript/browser-index')
 
-// A stand-in for the DOM: each canvas's getContext calls createGL(type, options, canvas, listeners).
+// Gives a stand-in canvas the methods createContext uses: its getContext calls createGL(type, options, canvas, listeners).
+function fakeCanvas (canvas, createGL) {
+  const listeners = {}
+  canvas.addEventListener = function (type, listener) {
+    listeners[type] = listener
+  }
+  canvas.removeEventListener = function (type) {
+    delete listeners[type]
+  }
+  canvas.getContext = function (type, options) {
+    return createGL(type, options, canvas, listeners)
+  }
+  return canvas
+}
+
+// A stand-in for the DOM.
 function withDocument (createGL, test) {
   global.document = {
     createElement: function () {
-      const listeners = {}
-      const canvas = {
-        width: 300,
-        height: 150,
-        addEventListener: function (type, listener) {
-          listeners[type] = listener
-        },
-        removeEventListener: function (type) {
-          delete listeners[type]
-        },
-        getContext: function (type, options) {
-          return createGL(type, options, canvas, listeners)
-        }
-      }
-      return canvas
+      return fakeCanvas({ width: 300, height: 150 }, createGL)
     }
   }
   try {
     test()
   } finally {
     delete global.document
+  }
+}
+
+// A stand-in for a worker, which has OffscreenCanvas but no document.
+function withOffscreenCanvas (createGL, test) {
+  global.OffscreenCanvas = class OffscreenCanvas {
+    constructor (width, height) {
+      this.width = width
+      this.height = height
+      fakeCanvas(this, createGL)
+    }
+  }
+  try {
+    test()
+  } finally {
+    delete global.OffscreenCanvas
   }
 }
 
@@ -61,6 +78,23 @@ tape('browser: create context', function (t) {
     const gl2 = createContext(10, 20, { alpha: false }, { createWebGL2Context: true })
     t.equal(gl2.type, 'webgl2')
     t.deepEqual(gl2.options, { alpha: false }, 'getContext gets only the context attributes')
+  })
+  t.end()
+})
+
+tape('browser: create context in a worker, with an OffscreenCanvas', function (t) {
+  withOffscreenCanvas(function (type, options, canvas) {
+    return fakeGL(type, options, canvas)
+  }, function () {
+    const gl = createContext(10, 20)
+    t.equal(gl.type, 'webgl')
+    t.ok(gl.canvas instanceof global.OffscreenCanvas, 'the canvas is an OffscreenCanvas')
+    t.equal(gl.canvas.width, 10)
+    t.equal(gl.canvas.height, 20)
+    gl.getExtension('STACKGL_resize_drawingbuffer').resize(30, 40)
+    t.equal(gl.canvas.width, 30)
+    t.equal(gl.canvas.height, 40)
+    t.equal(createContext(10, 20, {}, { createWebGL2Context: true }).type, 'webgl2')
   })
   t.end()
 })

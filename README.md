@@ -249,7 +249,7 @@ In a Docker container, start the container with `docker run --init`, or `init: t
 
 Yes, with [browserify](http://browserify.org/). The `STACKGL_destroy_context` and `STACKGL_resize_drawingbuffer` extensions are emulated as well.
 
-In a browser, `createGL` creates a canvas and calls its `getContext`, and throws the same errors as in Node. The reason in the error message comes from the browser, which often gives little or no detail.
+In a browser, `createGL` creates a canvas, or an `OffscreenCanvas` in a worker, and calls its `getContext`, and throws the same errors as in Node. The reason in the error message comes from the browser, which often gives little or no detail.
 
 ### How are `<img>` and `<video>` elements implemented?
 
