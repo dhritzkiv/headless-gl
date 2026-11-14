@@ -58,7 +58,7 @@ When `gl` builds from source, it downloads the ANGLE libraries for your platform
 
 gl runs on Linux (including Alpine), macOS, and Windows.
 
-Node.js versions 22 and up are tested and supported. Earlier versions may still function, however.
+Node.js versions 22 and up are tested and supported.
 
 ## API
 
