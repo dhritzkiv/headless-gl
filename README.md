@@ -119,6 +119,7 @@ Every context has a canvas, which `gl.canvas` returns, including contexts from `
 * Texture uploads take the canvas as an image of its drawing buffer, as browsers do, and so does another library's canvas whose `getContext` returns a headless-gl context. Either can be another context's canvas or the uploading context's own.
 * Its `style` is an object that nothing reads, for code that styles a canvas as it resizes it, as three.js's `setSize` does.
 * Assigning `gl.canvas` replaces what it returns, for libraries that wrap a context in a canvas of their own.
+* Posting it to a worker throws a `DataCloneError`, in Node 22.10 and later, since a context can't move to another thread. Create the canvas in the worker instead.
 * Its `[Symbol.dispose]()` destroys its context, as `STACKGL_destroy_context` does, so `using canvas = createCanvas(width, height)` frees the context when the block ends, in Node versions with `using` declarations (24 and later). Browsers' canvases don't have it.
 
 ### TypeScript

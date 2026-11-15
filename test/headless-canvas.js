@@ -553,3 +553,20 @@ tape('canvas: [Symbol.dispose] destroys its context', function (t) {
   }
   t.end()
 })
+
+tape('canvas: posting a canvas to a worker throws a DataCloneError', function (t) {
+  if (!require('worker_threads').markAsUncloneable) {
+    t.comment('this Node has no markAsUncloneable')
+    t.end()
+    return
+  }
+  const canvas = createContext.createCanvas(1, 1)
+  const { port1, port2 } = new MessageChannel()
+  t.throws(() => port1.postMessage(canvas), error => error.name === 'DataCloneError', 'postMessage throws, since a context can\'t move to another thread')
+  const gl = createContext(1, 1)
+  t.throws(() => structuredClone(gl.canvas), error => error.name === 'DataCloneError', 'and so does cloning a context\'s canvas')
+  destroy(gl)
+  port1.close()
+  port2.close()
+  t.end()
+})

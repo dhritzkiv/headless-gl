@@ -1,3 +1,4 @@
+const { markAsUncloneable } = require('worker_threads')
 const { createContextFor } = require('./create-context')
 const { encodePNG, encodePNGAsync } = require('./png')
 const { WebGL2RenderingContext, canvasImage, transparentImage, unwrapContext } = require('./webgl-rendering-context')
@@ -42,6 +43,10 @@ class HeadlessCanvas extends EventTarget {
     this.style = {}
     // The context's wrapper, which gl.canvas is called on. It isn't enumerable, so code that walks a context's properties, such as the conformance tests' argument printer, doesn't walk into the wrapper's constants and methods.
     Object.defineProperty(this, '_context', { value: null, writable: true })
+    // A context can't move to another thread, so posting the canvas to a worker throws a DataCloneError rather than sending a plain object with its size. Node 22 only has this from 22.10.
+    if (markAsUncloneable) {
+      markAsUncloneable(this)
+    }
   }
 
   get width () {
