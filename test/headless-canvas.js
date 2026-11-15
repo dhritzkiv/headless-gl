@@ -487,3 +487,18 @@ tape('canvas: convertToBlob resolves to a PNG Blob of the canvas as it was', asy
     t.equal(error.name, 'IndexSizeError', 'named IndexSizeError, as on an OffscreenCanvas')
   }
 })
+
+tape('canvas: style is an object that nothing reads', function (t) {
+  const canvas = createContext.createCanvas(2, 2)
+  const gl = canvas.getContext('webgl')
+  // What three.js's setSize does.
+  canvas.width = 6
+  canvas.height = 4
+  canvas.style.width = '3px'
+  canvas.style.height = '2px'
+  t.deepEqual([gl.drawingBufferWidth, gl.drawingBufferHeight], [6, 4], 'setting it doesn\'t change the drawing buffer')
+  t.deepEqual(canvas.style, { width: '3px', height: '2px' }, 'it keeps what\'s set')
+  t.notEqual(createContext.createCanvas(1, 1).style, canvas.style, 'and each canvas has its own')
+  destroy(gl)
+  t.end()
+})

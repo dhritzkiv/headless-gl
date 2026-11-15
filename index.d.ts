@@ -159,6 +159,10 @@ declare namespace createContext {
      */
     height: number;
     /**
+     * An object that nothing reads, for code that styles a canvas as it resizes it, as three.js's setSize does. It keeps whatever is set on it, but is typed with only the width and height that three.js sets, since a DOM CSSStyleDeclaration can't be cast to a type with an index signature.
+     */
+    readonly style: { width?: string; height?: string };
+    /**
      * Creates the canvas's context the first time, as a `<canvas>` does: `'webgl'` and the legacy `'experimental-webgl'` give a WebGL1 context, and `'webgl2'` a WebGL2 one. Later calls return that context, or null for the other version, and only the first call's attributes count. Other ids give null.
      * When the context can't be created, it fires `webglcontextcreationerror` with the reason in its `statusMessage`, and returns null.
      * @throws {TypeError} for an invalid powerPreference.

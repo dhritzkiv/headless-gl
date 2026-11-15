@@ -16,6 +16,7 @@ const depthClamp: number | undefined = gl.getExtension('EXT_depth_clamp')?.DEPTH
 gl.getExtension('EXT_texture_mirror_clamp_to_edge').MIRROR_CLAMP_TO_EDGE_EXT
 
 gl.canvas.width = 2
+gl.canvas.style.width = '2px'
 const canvasHeight: number = gl.canvas.height
 const dataURL: string = gl.canvas.toDataURL()
 gl.canvas.addEventListener('webglcontextlost', (event) => event.preventDefault())

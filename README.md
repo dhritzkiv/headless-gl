@@ -117,6 +117,7 @@ Every context has a canvas, which `gl.canvas` returns, including contexts from `
 * `toDataURL()` encodes the drawing buffer as a PNG data URL, with the top row first and alpha not premultiplied. Other image types give a PNG too, as browsers do for types they don't support. A canvas without a context gives a transparent image, and one 0 wide or high gives `"data:,"`.
 * `toBlob(callback)` calls back with the same PNG in a `Blob`, as a `<canvas>` does, and `convertToBlob()` resolves to one, as an `OffscreenCanvas` does. Both take the canvas as it is when they're called and compress it without blocking the event loop, which `toDataURL` blocks. A canvas 0 wide or high calls back with `null` or rejects with an `IndexSizeError`.
 * Texture uploads take the canvas as an image of its drawing buffer, as browsers do, and so does another library's canvas whose `getContext` returns a headless-gl context. Either can be another context's canvas or the uploading context's own.
+* Its `style` is an object that nothing reads, for code that styles a canvas as it resizes it, as three.js's `setSize` does.
 * Assigning `gl.canvas` replaces what it returns, for libraries that wrap a context in a canvas of their own.
 
 ### TypeScript

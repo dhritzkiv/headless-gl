@@ -38,6 +38,8 @@ class HeadlessCanvas extends EventTarget {
     super()
     this._width = toCanvasSize(width, 'width')
     this._height = toCanvasSize(height, 'height')
+    // Nothing reads it. It's there for code that styles a canvas as it resizes it, as three.js's setSize does, which would throw without it.
+    this.style = {}
     // The context's wrapper, which gl.canvas is called on. It isn't enumerable, so code that walks a context's properties, such as the conformance tests' argument printer, doesn't walk into the wrapper's constants and methods.
     Object.defineProperty(this, '_context', { value: null, writable: true })
   }
