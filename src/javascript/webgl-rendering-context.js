@@ -201,6 +201,28 @@ function unwrapContext (wrapper) {
   return wrappedContexts.get(wrapper)
 }
 
+// The method a HeadlessCanvas gives its pixels with, as imageData takes them. headless-canvas.js can't be required here without a cycle, so the canvas implements this instead.
+const canvasImage = Symbol('canvasImage')
+
+// What texture uploads take an image source as: ImageData-like pixels, or null for something that isn't one.
+// A canvas with a WebGL context gives its drawing buffer, whether it's a HeadlessCanvas or another library's canvas that wraps a headless-gl context, which its getContext returns once getContext('2d') has returned null. Asking then can't create a context.
+function imageData (pixels) {
+  if (pixels !== null && typeof pixels === 'object') {
+    if (typeof pixels[canvasImage] === 'function') {
+      return pixels[canvasImage]()
+    }
+    if (typeof pixels.getContext === 'function' && pixels.data === undefined && pixels.getContext('2d') === null) {
+      for (const contextId of ['webgl2', 'webgl']) {
+        const ctx = unwrapContext(pixels.getContext(contextId))
+        if (ctx) {
+          return ctx._drawingBufferImage()
+        }
+      }
+    }
+  }
+  return extractImageData(pixels)
+}
+
 // Converts a value to a GLuint64 as WebIDL does, the way `| 0` converts to a GLint: NaN and the infinities become 0, and other numbers are truncated and wrapped modulo 2^64.
 function toUint64 (value) {
   const x = Math.trunc(+value) % 2 ** 64
@@ -622,7 +644,7 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
     this.drawingBufferHeight = height
   }
 
-  // Reads the drawing buffer as a canvas holds it for toDataURL: RGBA with 8 bits per channel, the top row first and alpha not premultiplied, as in ImageData.
+  // Reads the drawing buffer as a canvas holds it for toDataURL and texture uploads: RGBA with 8 bits per channel, the top row first and alpha not premultiplied, as in ImageData.
   // Whatever framebuffer, read buffer, pixel pack buffer and pack parameters are set stay set, and so do GL errors.
   _drawingBufferImage () {
     const width = this.drawingBufferWidth
@@ -3240,7 +3262,7 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
       type = height
       format = width
 
-      pixels = extractImageData(pixels)
+      pixels = imageData(pixels)
 
       if (pixels == null) {
         throw new TypeError('texImage2D(GLenum, GLint, GLenum, GLint, GLenum, GLenum, ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement)')
@@ -3277,7 +3299,7 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
 
     // WebGL2 can upload a width by height rectangle of an image.
     if (this._isWebGL2() && isImageSource(pixels)) {
-      const image = extractImageData(pixels)
+      const image = imageData(pixels)
       if (image == null) {
         throw new TypeError('texImage2D(GLenum, GLint, GLenum, GLint, GLint, GLint, GLenum, GLenum, ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement)')
       }
@@ -3342,7 +3364,7 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
       type = height
       format = width
 
-      pixels = extractImageData(pixels)
+      pixels = imageData(pixels)
 
       if (pixels == null) {
         throw new TypeError('texSubImage2D(GLenum, GLint, GLint, GLint, GLenum, GLenum, ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement)')
@@ -3370,7 +3392,7 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
 
     // WebGL2 can upload a width by height rectangle of an image.
     if (this._isWebGL2() && isImageSource(pixels)) {
-      const image = extractImageData(pixels)
+      const image = imageData(pixels)
       if (image == null) {
         throw new TypeError('texSubImage2D(GLenum, GLint, GLint, GLint, GLint, GLint, GLenum, GLenum, ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement)')
       }
@@ -3474,7 +3496,7 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
       return
     }
     if (isImageSource(pixels)) {
-      const image = extractImageData(pixels)
+      const image = imageData(pixels)
       if (image == null) {
         throw new TypeError('texImage3D(GLenum, GLint, GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement)')
       }
@@ -3515,7 +3537,7 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
       typeof pixels.width !== 'undefined' &&
       typeof pixels.height !== 'undefined'
     ) {
-      const image = extractImageData(pixels)
+      const image = imageData(pixels)
       if (image == null) {
         throw new TypeError('texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLenum, GLenum, ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement)')
       }
@@ -4519,4 +4541,4 @@ for (const [key, value] of Object.entries(gl)) {
 }
 Object.assign(WebGL2RenderingContext, NativeWebGL.webgl2Constants)
 
-module.exports = { WebGLRenderingContext, WebGL2RenderingContext, WebGLRenderingContextHelper, wrapContext, unwrapContext }
+module.exports = { WebGLRenderingContext, WebGL2RenderingContext, WebGLRenderingContextHelper, wrapContext, unwrapContext, canvasImage }

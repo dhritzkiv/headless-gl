@@ -115,11 +115,12 @@ Every context has a canvas, which `gl.canvas` returns, including contexts from `
 
 * Setting its `width` or `height` resizes the drawing buffer and clears it, even when the size doesn't change.
 * `toDataURL()` encodes the drawing buffer as a PNG data URL, with the top row first and alpha not premultiplied. Other image types give a PNG too, as browsers do for types they don't support. A canvas without a context gives a transparent image, and one 0 wide or high gives `"data:,"`.
+* Texture uploads take the canvas as an image of its drawing buffer, as browsers do, and so does another library's canvas whose `getContext` returns a headless-gl context. Either can be another context's canvas or the uploading context's own.
 * Assigning `gl.canvas` replaces what it returns, for libraries that wrap a context in a canvas of their own.
 
 ### TypeScript
 
-headless-gl includes TypeScript types for its contexts, so projects don't need TypeScript's DOM types. They follow the DOM's WebGL types, except that a context's `canvas` is headless-gl's own, the contexts have no color space members, and texture uploads take an object with pixel data, like `ImageData`, or with a 2D context, like a node-canvas `Canvas`, instead of DOM elements.
+headless-gl includes TypeScript types for its contexts, so projects don't need TypeScript's DOM types. They follow the DOM's WebGL types, except that a context's `canvas` is headless-gl's own, the contexts have no color space members, and texture uploads take an object with pixel data, like `ImageData`, an object with a 2D context, like a node-canvas `Canvas`, or a headless-gl canvas, instead of DOM elements.
 
 To pass a context to code that expects the DOM's `WebGLRenderingContext`, such as three.js, cast it with `gl as WebGLRenderingContext`. To type every context as the DOM's, add this to your project:
 
@@ -278,7 +279,7 @@ In a browser, `createGL` creates a canvas, or an `OffscreenCanvas` in a worker, 
 
 ### How are `<img>` and `<video>` elements implemented?
 
-They aren't. Texture uploads take a typed array, an object with pixel data like `ImageData`, or an object with a 2D context like a node-canvas `Canvas`. The RGBA pixels of the last two are converted to the upload's format and type, as browsers convert images. In WebGL2 contexts, an upload's width and height, with `UNPACK_SKIP_PIXELS` and `UNPACK_SKIP_ROWS`, select a rectangle of the image, and 3D uploads take slices of it, as in browsers. To help reading and saving images, you should check out the following modules:
+They aren't. Texture uploads take a typed array, an object with pixel data like `ImageData`, an object with a 2D context like a node-canvas `Canvas`, or a canvas with a headless-gl context. The RGBA pixels of the last three are converted to the upload's format and type, as browsers convert images. In WebGL2 contexts, an upload's width and height, with `UNPACK_SKIP_PIXELS` and `UNPACK_SKIP_ROWS`, select a rectangle of the image, and 3D uploads take slices of it, as in browsers. To help reading and saving images, you should check out the following modules:
 
 * [`get-pixels`](https://www.npmjs.com/package/get-pixels)
 * [`save-pixels`](https://www.npmjs.com/package/save-pixels)

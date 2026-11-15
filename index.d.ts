@@ -81,10 +81,10 @@ declare namespace createContext {
   type WebGLVertexArrayObjectOES = WebGL.WebGLVertexArrayObjectOES;
 
   /**
-   * What texImage2D, texSubImage2D and texSubImage3D accept in place of a typed array: an object with pixel data, like ImageData, or an object with a 2D context, like a node-canvas Canvas.
+   * What texImage2D, texSubImage2D and texSubImage3D accept in place of a typed array: an object with pixel data, like ImageData, an object with a 2D context, like a node-canvas Canvas, or a HeadlessCanvas, whose drawing buffer is taken as an image. Another library's canvas whose getContext returns a headless-gl context also works, once its getContext('2d') returns null.
    * Pixel data in a Uint8Array or Uint8ClampedArray is taken to be RGBA with 8 bits per channel, and converted to the upload's format and type as browsers convert images. Pixel data in other typed arrays is uploaded as it is.
    */
-  type TexImageSource = TexImageData | TexImageCanvas;
+  type TexImageSource = TexImageData | TexImageCanvas | HeadlessCanvas;
 
   interface TexImageData {
     readonly width: number;

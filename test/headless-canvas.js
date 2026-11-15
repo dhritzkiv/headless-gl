@@ -314,3 +314,118 @@ tape('canvas: getContext fires webglcontextcreationerror when the context can\'t
   t.equal(new WebGLContextEvent('webglcontextlost').statusMessage, '', 'a WebGLContextEvent\'s statusMessage is empty by default')
   t.end()
 })
+
+// Reads a texture's pixels, row 0 first, through a framebuffer.
+function readTexture (gl, texture, width, height) {
+  const framebuffer = gl.createFramebuffer()
+  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer)
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0)
+  const pixels = new Uint8Array(width * height * 4)
+  gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  gl.deleteFramebuffer(framebuffer)
+  return [...pixels]
+}
+
+// A 1x2 canvas whose drawing buffer is red on top and blue below.
+function redOverBlue () {
+  const source = createContext.createCanvas(1, 2).getContext('webgl')
+  source.clearColor(0, 0, 1, 1)
+  source.clear(source.COLOR_BUFFER_BIT)
+  source.enable(source.SCISSOR_TEST)
+  source.scissor(0, 1, 1, 1)
+  source.clearColor(1, 0, 0, 1)
+  source.clear(source.COLOR_BUFFER_BIT)
+  return source
+}
+
+tape('canvas: texture uploads take a canvas as an image of its drawing buffer', function (t) {
+  const source = redOverBlue()
+  const gl = createContext(1, 1)
+  const texture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source.canvas)
+  t.deepEqual(readTexture(gl, texture, 1, 2), [255, 0, 0, 255, 0, 0, 255, 255], 'texImage2D uploads the canvas with its top row first, as an image')
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source.canvas)
+  t.deepEqual(readTexture(gl, texture, 1, 2), [0, 0, 255, 255, 255, 0, 0, 255], 'and flips it with UNPACK_FLIP_Y_WEBGL')
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false)
+
+  source.clearColor(0, 1, 0, 1)
+  source.clear(source.COLOR_BUFFER_BIT)
+  gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, source.canvas)
+  t.deepEqual(readTexture(gl, texture, 1, 2), [0, 255, 0, 255, 0, 0, 255, 255], 'texSubImage2D takes it too')
+  t.equal(gl.getError(), gl.NO_ERROR, 'no GL errors')
+  t.equal(source.getError(), source.NO_ERROR, 'in either context')
+  destroy(source)
+  destroy(gl)
+  t.end()
+})
+
+tape('canvas: an uploaded canvas\'s colors aren\'t premultiplied by alpha, as in an image', function (t) {
+  const source = createContext.createCanvas(1, 1).getContext('webgl')
+  source.clearColor(0.5, 0, 0, 0.5)
+  source.clear(source.COLOR_BUFFER_BIT)
+  const gl = createContext(1, 1)
+  const texture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source.canvas)
+  t.deepEqual(readTexture(gl, texture, 1, 1), [255, 0, 0, 128], 'the premultiplied drawing buffer is divided by alpha')
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source.canvas)
+  t.deepEqual(readTexture(gl, texture, 1, 1), [128, 0, 0, 128], 'and multiplied again with UNPACK_PREMULTIPLY_ALPHA_WEBGL')
+  destroy(source)
+  destroy(gl)
+  t.end()
+})
+
+tape('canvas: a context can upload its own canvas', function (t) {
+  const gl = createContext(1, 1)
+  gl.clearColor(1, 0, 0, 1)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+  const texture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, gl.canvas)
+  t.deepEqual(readTexture(gl, texture, 1, 1), [255, 0, 0, 255], 'the texture has the drawing buffer\'s pixels')
+  t.equal(gl.getError(), gl.NO_ERROR, 'no GL errors')
+  destroy(gl)
+  t.end()
+})
+
+tape('canvas: a canvas without a context uploads as transparent black, without getting one', function (t) {
+  const canvas = createContext.createCanvas(2, 1)
+  const gl = createContext(1, 1)
+  const texture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas)
+  t.deepEqual(readTexture(gl, texture, 2, 1), [0, 0, 0, 0, 0, 0, 0, 0], 'the texture is the canvas\'s size and transparent black')
+  const own = canvas.getContext('webgl')
+  t.ok(own instanceof createContext.WebGLRenderingContext, 'and the canvas can still get a WebGL1 context, so the upload didn\'t give it a WebGL2 one')
+  destroy(own)
+  destroy(gl)
+  t.end()
+})
+
+tape('canvas: uploads take another library\'s canvas that wraps a headless-gl context', function (t) {
+  const source = redOverBlue()
+  const asked = []
+  // Like the canvases of node-canvas-webgl and gl-conformance, whose getContext returns a headless-gl context.
+  const wrapper = {
+    width: 1,
+    height: 2,
+    getContext (contextId) {
+      asked.push(contextId)
+      return contextId === 'webgl' ? source : null
+    }
+  }
+  const gl = createContext(1, 1, {}, { createWebGL2Context: true })
+  const texture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, wrapper)
+  t.deepEqual(readTexture(gl, texture, 1, 2), [255, 0, 0, 255, 0, 0, 255, 255], 'the texture has the wrapped context\'s drawing buffer')
+  t.deepEqual(asked, ['2d', 'webgl2', 'webgl'], 'which is only asked for once its 2D context is null, so asking can\'t create a context')
+  t.equal(gl.getError(), gl.NO_ERROR, 'no GL errors')
+  destroy(source)
+  destroy(gl)
+  t.end()
+})

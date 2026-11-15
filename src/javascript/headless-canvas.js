@@ -1,6 +1,6 @@
 const { createContextFor } = require('./create-context')
 const { encodePNG } = require('./png')
-const { WebGL2RenderingContext, unwrapContext } = require('./webgl-rendering-context')
+const { WebGL2RenderingContext, canvasImage, unwrapContext } = require('./webgl-rendering-context')
 
 // The context ids getContext takes, as a <canvas> does, and whether each makes a WebGL2 context.
 const CONTEXT_IDS = new Map([['webgl', false], ['experimental-webgl', false], ['webgl2', true]])
@@ -86,7 +86,7 @@ class HeadlessCanvas extends EventTarget {
     }
     let image
     try {
-      image = this._image()
+      image = this[canvasImage]()
     } catch (error) {
       if (error instanceof RangeError) {
         return 'data:,'
@@ -101,8 +101,8 @@ class HeadlessCanvas extends EventTarget {
     return createContextFor(this, attributes, createWebGL2Context)
   }
 
-  // The canvas's pixels as ImageData holds them: its context's drawing buffer, or transparent black before it has a context.
-  _image () {
+  // The canvas's pixels as ImageData holds them, for toDataURL and texture uploads: its context's drawing buffer, or transparent black before it has a context.
+  [canvasImage] () {
     if (this._context) {
       return unwrapContext(this._context)._drawingBufferImage()
     }
