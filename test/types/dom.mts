@@ -1,5 +1,5 @@
 // A project with the DOM types that passes a context to code expecting the DOM's WebGLRenderingContext.
-import createGL from 'gl'
+import createGL, { type HeadlessCanvas } from 'gl'
 
 declare function useContext (context: WebGLRenderingContext): void
 
@@ -17,6 +17,9 @@ gl.canvas.addEventListener('webglcontextcreationerror', (event) => {
   const domEvent: Event = event
   const message: string = event.statusMessage
 })
+// @ts-expect-error A context's canvas is typed without convertToBlob, so that contexts can be cast to the DOM's types.
+gl.canvas.convertToBlob()
+const domBlob: Promise<Blob> = (gl.canvas as HeadlessCanvas).convertToBlob()
 
 // DOM sources with a 2D context or pixel data still work as texture sources.
 const canvas = document.createElement('canvas')

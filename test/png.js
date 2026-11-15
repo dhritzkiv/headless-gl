@@ -2,7 +2,7 @@
 
 const tape = require('tape')
 const zlib = require('zlib')
-const { encodePNG } = require('../src/javascript/png')
+const { encodePNG, encodePNGAsync } = require('../src/javascript/png')
 
 // Splits a PNG into its chunks, after checking its signature.
 function readChunks (t, png) {
@@ -52,4 +52,11 @@ tape('png: takes a view into a larger buffer', function (t) {
   const chunks = readChunks(t, encodePNG(1, 1, pixels))
   t.deepEqual([...zlib.inflateSync(chunks[1].data)], [0, 7, 7, 7, 7], 'only the view\'s pixels are encoded')
   t.end()
+})
+
+tape('png: encodePNGAsync gives the same PNG without blocking', async function (t) {
+  const pixels = new Uint8Array([255, 0, 0, 255, 0, 255, 0, 128, 0, 0, 255, 0, 10, 20, 30, 40])
+  const encoding = encodePNGAsync(2, 2, pixels)
+  pixels.fill(0)
+  t.deepEqual(await encoding, encodePNG(2, 2, new Uint8Array([255, 0, 0, 255, 0, 255, 0, 128, 0, 0, 255, 0, 10, 20, 30, 40])), 'with the pixels as they were when it was called')
 })

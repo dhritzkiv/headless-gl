@@ -115,6 +115,7 @@ Every context has a canvas, which `gl.canvas` returns, including contexts from `
 
 * Setting its `width` or `height` resizes the drawing buffer and clears it, even when the size doesn't change.
 * `toDataURL()` encodes the drawing buffer as a PNG data URL, with the top row first and alpha not premultiplied. Other image types give a PNG too, as browsers do for types they don't support. A canvas without a context gives a transparent image, and one 0 wide or high gives `"data:,"`.
+* `toBlob(callback)` calls back with the same PNG in a `Blob`, as a `<canvas>` does, and `convertToBlob()` resolves to one, as an `OffscreenCanvas` does. Both take the canvas as it is when they're called and compress it without blocking the event loop, which `toDataURL` blocks. A canvas 0 wide or high calls back with `null` or rejects with an `IndexSizeError`.
 * Texture uploads take the canvas as an image of its drawing buffer, as browsers do, and so does another library's canvas whose `getContext` returns a headless-gl context. Either can be another context's canvas or the uploading context's own.
 * Assigning `gl.canvas` replaces what it returns, for libraries that wrap a context in a canvas of their own.
 
@@ -122,7 +123,7 @@ Every context has a canvas, which `gl.canvas` returns, including contexts from `
 
 headless-gl includes TypeScript types for its contexts, so projects don't need TypeScript's DOM types. They follow the DOM's WebGL types, except that a context's `canvas` is headless-gl's own, the contexts have no color space members, and texture uploads take an object with pixel data, like `ImageData`, an object with a 2D context, like a node-canvas `Canvas`, or a headless-gl canvas, instead of DOM elements.
 
-To pass a context to code that expects the DOM's `WebGLRenderingContext`, such as three.js, cast it with `gl as WebGLRenderingContext`. To type every context as the DOM's, add this to your project:
+To pass a context to code that expects the DOM's `WebGLRenderingContext`, such as three.js, cast it with `gl as WebGLRenderingContext`. That's why `gl.canvas` is typed without `convertToBlob`, which a DOM `<canvas>` doesn't have; cast it to `HeadlessCanvas` to call that. To type every context as the DOM's, add this to your project:
 
 ```ts
 declare module 'gl' {

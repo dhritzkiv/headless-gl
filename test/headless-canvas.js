@@ -429,3 +429,61 @@ tape('canvas: uploads take another library\'s canvas that wraps a headless-gl co
   destroy(gl)
   t.end()
 })
+
+tape('canvas: toBlob calls back later with a PNG Blob of the canvas as it was', function (t) {
+  const canvas = createContext.createCanvas(1, 1)
+  const gl = canvas.getContext('webgl')
+  gl.clearColor(1, 0, 0, 1)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+  let returned = false
+  canvas.toBlob(async function (blob) {
+    t.ok(returned, 'it calls back after toBlob returns, as in browsers')
+    t.ok(blob instanceof Blob, 'with a Blob')
+    t.equal(blob.type, 'image/png', 'of a PNG, even when asked for another type')
+    const image = decodePNG(Buffer.from(await blob.arrayBuffer()))
+    t.deepEqual(imagePixel(image, 0, 0), [255, 0, 0, 255], 'of the canvas when toBlob was called')
+    destroy(gl)
+    t.end()
+  }, 'image/webp')
+  returned = true
+  gl.clearColor(0, 0, 1, 1)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+})
+
+tape('canvas: toBlob calls back with null when the canvas has no pixels', function (t) {
+  let returned = false
+  createContext.createCanvas(0, 1).toBlob(function (blob) {
+    t.ok(returned, 'later too')
+    t.equal(blob, null, 'as in browsers')
+    t.end()
+  })
+  returned = true
+})
+
+tape('canvas: toBlob needs a callback', function (t) {
+  t.throws(() => createContext.createCanvas(1, 1).toBlob(), TypeError, 'or throws a TypeError')
+  t.end()
+})
+
+tape('canvas: convertToBlob resolves to a PNG Blob of the canvas as it was', async function (t) {
+  const canvas = createContext.createCanvas(1, 1)
+  const gl = canvas.getContext('webgl')
+  gl.clearColor(1, 0, 0, 1)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+  const pending = canvas.convertToBlob({ type: 'image/jpeg', quality: 0.5 })
+  gl.clearColor(0, 0, 1, 1)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+  const blob = await pending
+  t.ok(blob instanceof Blob, 'it resolves to a Blob')
+  t.equal(blob.type, 'image/png', 'of a PNG, even when asked for another type')
+  t.deepEqual(imagePixel(decodePNG(Buffer.from(await blob.arrayBuffer())), 0, 0), [255, 0, 0, 255], 'of the canvas when convertToBlob was called')
+  destroy(gl)
+
+  try {
+    await createContext.createCanvas(0, 1).convertToBlob()
+    t.fail('a canvas without pixels should reject')
+  } catch (error) {
+    t.ok(error instanceof DOMException, 'a canvas without pixels rejects with a DOMException')
+    t.equal(error.name, 'IndexSizeError', 'named IndexSizeError, as on an OffscreenCanvas')
+  }
+})

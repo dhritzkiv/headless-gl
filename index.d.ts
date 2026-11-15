@@ -1,4 +1,4 @@
-// headless-gl declares its own WebGL types, so projects don't need TypeScript's DOM types. Its contexts' canvas is a HeadlessCanvas, they don't have the browser's color space members, and texture uploads take a TexImageSource as declared below instead of DOM elements.
+// headless-gl declares its own WebGL types, so projects don't need TypeScript's DOM types. Its contexts' canvas is a ContextCanvas, they don't have the browser's color space members, and texture uploads take a TexImageSource as declared below instead of DOM elements.
 // To use a context where the DOM's WebGLRenderingContext is expected, cast it with `gl as WebGLRenderingContext`, or retype every context through CustomContextTypes.
 import type * as WebGL from './webgl';
 
@@ -84,7 +84,7 @@ declare namespace createContext {
    * What texImage2D, texSubImage2D and texSubImage3D accept in place of a typed array: an object with pixel data, like ImageData, an object with a 2D context, like a node-canvas Canvas, or a HeadlessCanvas, whose drawing buffer is taken as an image. Another library's canvas whose getContext returns a headless-gl context also works, once its getContext('2d') returns null.
    * Pixel data in a Uint8Array or Uint8ClampedArray is taken to be RGBA with 8 bits per channel, and converted to the upload's format and type as browsers convert images. Pixel data in other typed arrays is uploaded as it is.
    */
-  type TexImageSource = TexImageData | TexImageCanvas | HeadlessCanvas;
+  type TexImageSource = TexImageData | TexImageCanvas | ContextCanvas;
 
   interface TexImageData {
     readonly width: number;
@@ -133,12 +133,21 @@ declare namespace createContext {
    */
   type CanvasAbortSignal = typeof globalThis extends { AbortSignal: { prototype: infer S } } ? S : { readonly aborted: boolean };
 
+  /**
+   * A Blob, as the DOM's or Node's types declare it, or the members toBlob and convertToBlob's results have when the project has neither.
+   */
+  type CanvasBlob = typeof globalThis extends { Blob: { prototype: infer B } } ? B : {
+    readonly size: number;
+    readonly type: string;
+    arrayBuffer(): Promise<ArrayBuffer>;
+  };
+
   type CanvasEventListenerOptions = boolean | { capture?: boolean; once?: boolean; passive?: boolean; signal?: CanvasAbortSignal };
 
   /**
-   * A canvas for a WebGL context, from createCanvas, or a context's canvas, which `gl.canvas` returns. It's an EventTarget.
+   * A context's canvas, as `gl.canvas` types it. It's a HeadlessCanvas, typed without convertToBlob, which a DOM `<canvas>` doesn't have, so that contexts can still be cast to the DOM's context types. Cast it to HeadlessCanvas to call convertToBlob. It's an EventTarget.
    */
-  interface HeadlessCanvas {
+  interface ContextCanvas {
     /**
      * Setting it resizes the context's drawing buffer and clears it, even when the width doesn't change, as in browsers. A canvas 0 wide has a drawing buffer 1 wide.
      * @throws {TypeError} when set to something that isn't an integer from 0 to `Number.MAX_SAFE_INTEGER`, as on an OffscreenCanvas.
@@ -161,11 +170,25 @@ declare namespace createContext {
      * Encodes the drawing buffer as a PNG data URL, top row first and with alpha not premultiplied. Other image types give a PNG too, as browsers do for types they don't support. A canvas with no pixels gives `"data:,"`.
      */
     toDataURL(type?: string, quality?: unknown): string;
+    /**
+     * Calls back on a later turn of the event loop with the same PNG as toDataURL's in a Blob, as a `<canvas>` does, encoded without blocking the event loop. It takes the canvas as it is when called. A canvas with no pixels gives null.
+     */
+    toBlob(callback: (blob: CanvasBlob | null) => void, type?: string, quality?: unknown): void;
     addEventListener(type: "webglcontextcreationerror" | "webglcontextlost" | "webglcontextrestored", listener: WebGLContextEventListener | null, options?: CanvasEventListenerOptions): void;
     addEventListener(type: string, listener: CanvasEventListener | null, options?: CanvasEventListenerOptions): void;
     removeEventListener(type: "webglcontextcreationerror" | "webglcontextlost" | "webglcontextrestored", listener: WebGLContextEventListener | null, options?: boolean | { capture?: boolean }): void;
     removeEventListener(type: string, listener: CanvasEventListener | null, options?: boolean | { capture?: boolean }): void;
     dispatchEvent(event: CanvasEvent): boolean;
+  }
+
+  /**
+   * A canvas for a WebGL context, from createCanvas. Contexts' canvases are HeadlessCanvases too.
+   */
+  interface HeadlessCanvas extends ContextCanvas {
+    /**
+     * Resolves to the same PNG as toDataURL's in a Blob, as an OffscreenCanvas does, encoded without blocking the event loop. It takes the canvas as it is when called. A canvas with no pixels rejects with an `IndexSizeError` DOMException.
+     */
+    convertToBlob(options?: { type?: string; quality?: number }): Promise<CanvasBlob>;
   }
 
   /**

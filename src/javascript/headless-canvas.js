@@ -1,5 +1,5 @@
 const { createContextFor } = require('./create-context')
-const { encodePNG } = require('./png')
+const { encodePNG, encodePNGAsync } = require('./png')
 const { WebGL2RenderingContext, canvasImage, unwrapContext } = require('./webgl-rendering-context')
 
 // The context ids getContext takes, as a <canvas> does, and whether each makes a WebGL2 context.
@@ -13,6 +13,11 @@ function toCanvasSize (value, name) {
   }
   // Truncating -0.5 gives -0.
   return size + 0
+}
+
+// Encodes an image as a PNG Blob, off the event loop.
+async function pngBlob (image) {
+  return new Blob([await encodePNGAsync(image.width, image.height, image.data)], { type: 'image/png' })
 }
 
 // The event a canvas fires when getContext can't create a context, as browsers' WebGLContextEvent.
@@ -79,21 +84,49 @@ class HeadlessCanvas extends EventTarget {
     }
   }
 
-  // Always a PNG, which browsers also give for an image type they don't support, so the type and quality are ignored. A canvas without pixels gives "data:,", as in browsers, and so does one too large to hold in memory.
+  // The image exports are always PNGs, which browsers also give for an image type they don't support, so the type and quality are ignored.
+  // As in browsers, a canvas without pixels gives "data:," here, and so does one too large to hold in memory.
   toDataURL (type, quality) {
-    if (this._width === 0 || this._height === 0) {
+    const image = this._snapshot()
+    if (!image) {
       return 'data:,'
     }
-    let image
+    return `data:image/png;base64,${encodePNG(image.width, image.height, image.data).toString('base64')}`
+  }
+
+  // As a <canvas>'s, it calls back on a later turn of the event loop with the canvas as it was when called, or with null where toDataURL gives "data:,".
+  toBlob (callback, type, quality) {
+    if (typeof callback !== 'function') {
+      throw new TypeError('HeadlessCanvas toBlob needs a callback.')
+    }
+    const image = this._snapshot()
+    const blob = image ? pngBlob(image).catch(() => null) : Promise.resolve(null)
+    // A callback that throws is reported as an uncaught exception, rather than rejecting a promise nobody handles.
+    blob.then(blob => setImmediate(callback, blob))
+  }
+
+  // As an OffscreenCanvas's, it resolves to the canvas as it was when called, and rejects with an IndexSizeError where toDataURL gives "data:,".
+  async convertToBlob (options) {
+    const image = this._snapshot()
+    if (!image) {
+      throw new DOMException('The canvas has no pixels to encode.', 'IndexSizeError')
+    }
+    return pngBlob(image)
+  }
+
+  // The canvas's pixels for the image exports, or null when it has none or too many to hold in memory.
+  _snapshot () {
+    if (this._width === 0 || this._height === 0) {
+      return null
+    }
     try {
-      image = this[canvasImage]()
+      return this[canvasImage]()
     } catch (error) {
       if (error instanceof RangeError) {
-        return 'data:,'
+        return null
       }
       throw error
     }
-    return `data:image/png;base64,${encodePNG(image.width, image.height, image.data).toString('base64')}`
   }
 
   // Throws an Error with the code HEADLESS_GL_CONTEXT_CREATION_FAILED when the context can't be created.

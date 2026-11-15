@@ -34,6 +34,8 @@ const isCanvas: boolean = canvas instanceof HeadlessCanvas
 const event: WebGLContextEvent = new WebGLContextEvent('webglcontextcreationerror', { statusMessage: 'No GPU.' })
 canvas.dispatchEvent(event)
 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas)
+canvas.toBlob((blob) => blob?.type)
+const png: Promise<ArrayBuffer> = canvas.convertToBlob({ type: 'image/png' }).then((blob) => blob.arrayBuffer())
 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, gl.canvas)
 // @ts-expect-error WebGL1 contexts have no WebGL2 methods.
 gl.createVertexArray()

@@ -1,4 +1,7 @@
+const { promisify } = require('util')
 const zlib = require('zlib')
+
+const deflate = promisify(zlib.deflate)
 
 const SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 
@@ -29,8 +32,17 @@ function chunk (type, data) {
   return bytes
 }
 
-// Encodes RGBA pixels with 8 bits per channel, the top row first and alpha not premultiplied, as ImageData has them, into a PNG.
-function encodePNG (width, height, pixels) {
+// The image data before compression: each row starts with its filter type, which is 0 for none.
+function unfilteredRows (width, height, pixels) {
+  const rowLength = width * 4
+  const rows = Buffer.alloc((rowLength + 1) * height)
+  for (let y = 0; y < height; ++y) {
+    rows.set(pixels.subarray(y * rowLength, (y + 1) * rowLength), y * (rowLength + 1) + 1)
+  }
+  return rows
+}
+
+function assemble (width, height, compressedRows) {
   const header = Buffer.alloc(13)
   header.writeUInt32BE(width, 0)
   header.writeUInt32BE(height, 4)
@@ -38,19 +50,22 @@ function encodePNG (width, height, pixels) {
   header[9] = 6 // Color type: RGBA
   // The compression, filter and interlace methods are all 0.
 
-  // Each row starts with its filter type, which is 0 for none.
-  const rowLength = width * 4
-  const rows = Buffer.alloc((rowLength + 1) * height)
-  for (let y = 0; y < height; ++y) {
-    rows.set(pixels.subarray(y * rowLength, (y + 1) * rowLength), y * (rowLength + 1) + 1)
-  }
-
   return Buffer.concat([
     SIGNATURE,
     chunk('IHDR', header),
-    chunk('IDAT', zlib.deflateSync(rows)),
+    chunk('IDAT', compressedRows),
     chunk('IEND', Buffer.alloc(0))
   ])
 }
 
-module.exports = { encodePNG }
+// Encodes RGBA pixels with 8 bits per channel, the top row first and alpha not premultiplied, as ImageData has them, into a PNG.
+function encodePNG (width, height, pixels) {
+  return assemble(width, height, zlib.deflateSync(unfilteredRows(width, height, pixels)))
+}
+
+// The same, compressing on libuv's thread pool so the event loop isn't blocked. The pixels are copied before it returns.
+async function encodePNGAsync (width, height, pixels) {
+  return assemble(width, height, await deflate(unfilteredRows(width, height, pixels)))
+}
+
+module.exports = { encodePNG, encodePNGAsync }
