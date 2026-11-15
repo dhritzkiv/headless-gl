@@ -1,4 +1,4 @@
-// headless-gl declares its own WebGL types, so projects don't need TypeScript's DOM types. Its contexts don't have the browser's canvas or color space members, and texture uploads take a TexImageSource as declared below instead of DOM elements.
+// headless-gl declares its own WebGL types, so projects don't need TypeScript's DOM types. Its contexts' canvas is a HeadlessCanvas, they don't have the browser's color space members, and texture uploads take a TexImageSource as declared below instead of DOM elements.
 // To use a context where the DOM's WebGLRenderingContext is expected, cast it with `gl as WebGLRenderingContext`, or retype every context through CustomContextTypes.
 import type * as WebGL from './webgl';
 
@@ -96,6 +96,41 @@ declare namespace createContext {
     readonly width: number;
     readonly height: number;
     getContext(contextId: "2d"): { getImageData(sx: number, sy: number, sw: number, sh: number): TexImageData } | null;
+  }
+
+  /**
+   * An event, as the DOM's or Node's types declare it, or the members every event has when the project has neither.
+   */
+  type CanvasEvent = typeof globalThis extends { Event: { prototype: infer E } } ? E : {
+    readonly type: string;
+    readonly defaultPrevented: boolean;
+    preventDefault(): void;
+  };
+
+  type CanvasEventListener = ((event: CanvasEvent) => void) | { handleEvent(event: CanvasEvent): void };
+
+  /**
+   * An AbortSignal, as the DOM's or Node's types declare it, or the member every signal has when the project has neither.
+   */
+  type CanvasAbortSignal = typeof globalThis extends { AbortSignal: { prototype: infer S } } ? S : { readonly aborted: boolean };
+
+  /**
+   * The canvas of a context, which `gl.canvas` returns. It's an EventTarget.
+   */
+  interface HeadlessCanvas {
+    /**
+     * Setting it resizes the context's drawing buffer and clears it, even when the width doesn't change, as in browsers. A canvas 0 wide has a drawing buffer 1 wide.
+     * @throws {TypeError} when set to something that isn't an integer from 0 to `Number.MAX_SAFE_INTEGER`, as on an OffscreenCanvas.
+     */
+    width: number;
+    /**
+     * Setting it resizes the context's drawing buffer and clears it, even when the height doesn't change, as in browsers. A canvas 0 high has a drawing buffer 1 high.
+     * @throws {TypeError} when set to something that isn't an integer from 0 to `Number.MAX_SAFE_INTEGER`, as on an OffscreenCanvas.
+     */
+    height: number;
+    addEventListener(type: string, listener: CanvasEventListener | null, options?: boolean | { capture?: boolean; once?: boolean; passive?: boolean; signal?: CanvasAbortSignal }): void;
+    removeEventListener(type: string, listener: CanvasEventListener | null, options?: boolean | { capture?: boolean }): void;
+    dispatchEvent(event: CanvasEvent): boolean;
   }
 
   interface STACKGL_destroy_context {

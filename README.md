@@ -77,6 +77,8 @@ const gl = createGL(width, height)
 
 If `width` or `height` is larger than the GPU allows, the drawing buffer is made as large as it allows, as in browsers, and `gl.drawingBufferWidth` and `gl.drawingBufferHeight` give its size. The `STACKGL_resize_drawingbuffer` extension does the same.
 
+Every context has a `canvas`, as in browsers. Setting `gl.canvas.width` or `gl.canvas.height` resizes the drawing buffer and clears it, even when the size doesn't change. As on an `OffscreenCanvas`, a size that isn't an integer from 0 up throws a `TypeError`. A canvas with a width or height of 0 has a 1×1 drawing buffer. Assigning `gl.canvas` replaces what it returns, for libraries that wrap a context in a canvas of their own.
+
 **Returns** A new `WebGLRenderingContext` object, or a `WebGL2RenderingContext` when `options.createWebGL2Context` is `true`.
 
 **Throws** an `Error` with the code `HEADLESS_GL_CONTEXT_CREATION_FAILED` if the context can't be created, for example when a library that ANGLE needs isn't installed. The error message gives the reason, such as the name of the missing library. Throws a `RangeError` if `width` or `height` is less than 1.
@@ -94,7 +96,7 @@ They can't be constructed directly.
 
 ### TypeScript
 
-headless-gl includes TypeScript types for its contexts, so projects don't need TypeScript's DOM types. They follow the DOM's WebGL types, except that the contexts have no `canvas` or color space members, and texture uploads take an object with pixel data, like `ImageData`, or with a 2D context, like a node-canvas `Canvas`, instead of DOM elements.
+headless-gl includes TypeScript types for its contexts, so projects don't need TypeScript's DOM types. They follow the DOM's WebGL types, except that a context's `canvas` is headless-gl's own, the contexts have no color space members, and texture uploads take an object with pixel data, like `ImageData`, or with a 2D context, like a node-canvas `Canvas`, instead of DOM elements.
 
 To pass a context to code that expects the DOM's `WebGLRenderingContext`, such as three.js, cast it with `gl as WebGLRenderingContext`. To type every context as the DOM's, add this to your project:
 
@@ -117,7 +119,7 @@ In addition to all the usual WebGL methods, `headless-gl` exposes some custom ex
 
 This extension provides a mechanism to resize the drawing buffer of a WebGL context once it is created.
 
-In a pure DOM implementation, this would be implemented by resizing the context's canvas element by modifying its `width/height` properties. This canvas manipulation is not possible in headless-gl, since a headless context doesn't have a DOM or a canvas element associated with it.
+It sets the canvas's size, like setting `gl.canvas.width` and `gl.canvas.height`, except that it only clears the drawing buffer when its size changes, and throws for a width or height below 1.
 
 ##### Example
 

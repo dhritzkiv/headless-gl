@@ -1,4 +1,5 @@
 const bits = require('bit-twiddle')
+const { HeadlessCanvas } = require('./headless-canvas')
 const { WebGLContextAttributes } = require('./webgl-context-attributes')
 const { WebGLRenderingContextHelper, wrapContext } = require('./webgl-rendering-context')
 const { WebGLTextureUnit } = require('./webgl-texture-unit')
@@ -62,6 +63,7 @@ function createContext (width, height, attributes, options) {
   ctx._ = CONTEXT_COUNTER++
 
   ctx._contextAttributes = contextAttributes
+  ctx._canvas = new HeadlessCanvas(width, height)
 
   ctx._extensions = {}
   ctx._programs = {}
@@ -140,7 +142,9 @@ function createContext (width, height, attributes, options) {
   ctx.clearStencil(0)
   ctx.clear(ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT | ctx.STENCIL_BUFFER_BIT)
 
-  return wrapContext(ctx)
+  const gl = wrapContext(ctx)
+  ctx._canvas._context = gl
+  return gl
 }
 
 module.exports = createContext

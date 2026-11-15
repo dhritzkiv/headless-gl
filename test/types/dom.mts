@@ -11,6 +11,9 @@ useContext(gl as WebGLRenderingContext)
 const gl2 = createGL(1, 1, {}, { createWebGL2Context: true })
 const context2: WebGL2RenderingContext = gl2 as WebGL2RenderingContext
 
+// With the DOM types, the canvas's listeners get the DOM's Event.
+gl.canvas.addEventListener('webglcontextlost', (event: Event) => event.preventDefault())
+
 // DOM sources with a 2D context or pixel data still work as texture sources.
 const canvas = document.createElement('canvas')
 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas)

@@ -15,8 +15,11 @@ const depthClamp: number | undefined = gl.getExtension('EXT_depth_clamp')?.DEPTH
 // @ts-expect-error getExtension returns null for unsupported extensions, including those the DOM types don't declare.
 gl.getExtension('EXT_texture_mirror_clamp_to_edge').MIRROR_CLAMP_TO_EDGE_EXT
 
-// @ts-expect-error headless-gl contexts have no canvas.
-gl.canvas
+gl.canvas.width = 2
+const canvasHeight: number = gl.canvas.height
+gl.canvas.addEventListener('webglcontextlost', (event) => event.preventDefault())
+// @ts-expect-error The canvas has no DOM layout members.
+gl.canvas.getBoundingClientRect()
 // @ts-expect-error WebGL1 contexts have no WebGL2 methods.
 gl.createVertexArray()
 

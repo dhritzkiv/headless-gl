@@ -157,6 +157,9 @@ const availableExtensions = {
   ext_texture_compression_bptc: getEXTTextureCompressionBPTC
 }
 
+// The context each wrapper from wrapContext is bound to.
+const wrappedContexts = new WeakMap()
+
 // Creates the object that createContext returns: it has the constants and spec methods for the context's WebGL version, bound to the native context.
 function wrapContext (ctx) {
   const isWebGL2 = ctx._isWebGL2()
@@ -189,7 +192,13 @@ function wrapContext (ctx) {
     }
   })
 
+  wrappedContexts.set(wrapper, ctx)
   return wrapper
+}
+
+// Returns the context a wrapper from wrapContext is bound to, or undefined for anything else.
+function unwrapContext (wrapper) {
+  return wrappedContexts.get(wrapper)
 }
 
 // Converts a value to a GLuint64 as WebIDL does, the way `| 0` converts to a GLint: NaN and the infinities become 0, and other numbers are truncated and wrapped modulo 2^64.
@@ -601,6 +610,16 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
     }
     this.bindTexture(this.TEXTURE_2D, prevTexture)
     this.bindRenderbuffer(this.RENDERBUFFER, prevRenderbuffer)
+  }
+
+  // Reallocates the drawing buffer for a canvas of this size, as setting a canvas's width or height does: it's at least 1x1 and no larger than the GPU allows, and it's cleared even when its size doesn't change.
+  _resetDrawingBuffer (width, height) {
+    const [maxWidth, maxHeight] = this._maxDrawingBufferSize()
+    width = Math.min(Math.max(width, 1), maxWidth)
+    height = Math.min(Math.max(height, 1), maxHeight)
+    this._resizeDrawingBuffer(width, height)
+    this.drawingBufferWidth = width
+    this.drawingBufferHeight = height
   }
 
   _restoreError (lastError) {
@@ -2985,6 +3004,9 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
     if (!(width > 0 && height > 0)) {
       throw new Error('Invalid surface dimensions')
     }
+    // The canvas keeps the size asked for, as when its width and height are set.
+    this._canvas._width = width
+    this._canvas._height = height
     const [maxWidth, maxHeight] = this._maxDrawingBufferSize()
     width = Math.min(width, maxWidth)
     height = Math.min(height, maxHeight)
@@ -4410,6 +4432,21 @@ for (const Context of [WebGLRenderingContext, WebGL2RenderingContext]) {
   Object.defineProperty(Context.prototype, Symbol.toStringTag, { value: Context.name, configurable: true })
 }
 
+// As in browsers, canvas is an accessor on the prototypes, which for...in finds. Unlike in browsers, assigning it replaces what it returns, for libraries that wrap a context in a canvas of their own, as node-canvas-webgl and gl-conformance's canvas do.
+for (const Context of [WebGLRenderingContext, WebGL2RenderingContext]) {
+  Object.defineProperty(Context.prototype, 'canvas', {
+    get () {
+      const ctx = unwrapContext(this)
+      return ctx && ctx._canvas
+    },
+    set (value) {
+      Object.defineProperty(this, 'canvas', { value, writable: true, enumerable: true, configurable: true })
+    },
+    enumerable: true,
+    configurable: true
+  })
+}
+
 // Make the gl consts available as static properties
 for (const [key, value] of Object.entries(gl)) {
   if (typeof value !== 'number') {
@@ -4420,4 +4457,4 @@ for (const [key, value] of Object.entries(gl)) {
 }
 Object.assign(WebGL2RenderingContext, NativeWebGL.webgl2Constants)
 
-module.exports = { WebGLRenderingContext, WebGL2RenderingContext, WebGLRenderingContextHelper, wrapContext }
+module.exports = { WebGLRenderingContext, WebGL2RenderingContext, WebGLRenderingContextHelper, wrapContext, unwrapContext }
