@@ -1,3 +1,4 @@
+// The browser's own canvas, without a context, as createCanvas returns in Node.
 function createCanvas (width, height) {
   if (typeof document !== 'undefined') {
     const canvas = document.createElement('canvas')
@@ -77,5 +78,7 @@ function createContext (width, height, contextAttributes, options) {
 }
 
 module.exports = createContext
+module.exports.createCanvas = createCanvas
+module.exports.WebGLContextEvent = globalThis.WebGLContextEvent
 module.exports.WebGLRenderingContext = globalThis.WebGLRenderingContext
 module.exports.WebGL2RenderingContext = globalThis.WebGL2RenderingContext

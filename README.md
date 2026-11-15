@@ -281,6 +281,8 @@ Yes, with [browserify](http://browserify.org/). The `STACKGL_destroy_context` an
 
 In a browser, `createGL` creates a canvas, or an `OffscreenCanvas` in a worker, and calls its `getContext`, and throws the same errors as in Node. The reason in the error message comes from the browser, which often gives little or no detail.
 
+`createCanvas` returns the same kind of canvas without a context, and `WebGLContextEvent` is the browser's. These are the browser's own canvases, not `HeadlessCanvas`es, which the browser build doesn't have. So a `<canvas>` has no `convertToBlob`, and an `OffscreenCanvas` has no `toDataURL` or `toBlob`. Their sizes follow the browser's rules, so an invalid size becomes 0 on a `<canvas>`.
+
 ### How are `<img>` and `<video>` elements implemented?
 
 They aren't. Texture uploads take a typed array, an object with pixel data like `ImageData`, an object with a 2D context like a node-canvas `Canvas`, or a canvas with a headless-gl context. The RGBA pixels of the last three are converted to the upload's format and type, as browsers convert images. In WebGL2 contexts, an upload's width and height, with `UNPACK_SKIP_PIXELS` and `UNPACK_SKIP_ROWS`, select a rectangle of the image, and 3D uploads take slices of it, as in browsers. To help reading and saving images, you should check out the following modules:

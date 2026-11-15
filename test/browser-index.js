@@ -127,3 +127,21 @@ tape('browser: create context when the browser refuses', function (t) {
   })
   t.end()
 })
+
+tape('browser: createCanvas returns the browser\'s canvas without a context', function (t) {
+  withDocument(function (type, options, canvas) {
+    return fakeGL(type, options, canvas)
+  }, function () {
+    const canvas = createContext.createCanvas(10, 20)
+    t.deepEqual([canvas.width, canvas.height], [10, 20], 'a <canvas> of the size it\'s given')
+    t.equal(canvas.getContext('webgl2').type, 'webgl2', 'whose getContext gives the browser\'s context')
+  })
+  withOffscreenCanvas(function (type, options, canvas) {
+    return fakeGL(type, options, canvas)
+  }, function () {
+    const canvas = createContext.createCanvas(10, 20)
+    t.ok(canvas instanceof global.OffscreenCanvas, 'or an OffscreenCanvas in a worker')
+    t.deepEqual([canvas.width, canvas.height], [10, 20], 'of the size it\'s given')
+  })
+  t.end()
+})
