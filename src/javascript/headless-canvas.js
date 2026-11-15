@@ -131,6 +131,15 @@ class HeadlessCanvas extends EventTarget {
     }
   }
 
+  // Destroys the context, as STACKGL_destroy_context does, so a using declaration frees it when its block ends. Browsers' canvases don't have this.
+  // A canvas without a context, or whose context is already destroyed, is left as it is.
+  [Symbol.dispose] () {
+    const ctx = this._liveContext()
+    if (ctx) {
+      ctx.destroy()
+    }
+  }
+
   // Throws an Error with the code HEADLESS_GL_CONTEXT_CREATION_FAILED when the context can't be created.
   _createContext (attributes, createWebGL2Context) {
     return createContextFor(this, attributes, createWebGL2Context)

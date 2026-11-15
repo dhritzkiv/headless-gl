@@ -528,3 +528,28 @@ tape('canvas: a destroyed context\'s canvas can still be resized and exported', 
   destroy(other)
   t.end()
 })
+
+tape('canvas: [Symbol.dispose] destroys its context', function (t) {
+  const { createCanvas } = createContext
+  const canvas = createCanvas(1, 1)
+  const gl = canvas.getContext('webgl')
+  canvas[Symbol.dispose]()
+  t.throws(() => gl.getParameter(gl.MAX_TEXTURE_SIZE), /Invalid GL context/, 'the context is destroyed')
+  t.doesNotThrow(() => canvas[Symbol.dispose](), 'disposing it again does nothing')
+  t.doesNotThrow(() => createCanvas(1, 1)[Symbol.dispose](), 'nor does disposing a canvas without a context')
+  const destroyed = createContext(1, 1)
+  destroy(destroyed)
+  t.doesNotThrow(() => destroyed.canvas[Symbol.dispose](), 'or one whose context STACKGL_destroy_context destroyed')
+
+  let usingDeclaration
+  try {
+    usingDeclaration = new Function('createCanvas', '{ using canvas = createCanvas(1, 1); return canvas.getContext(\'webgl\') }') // eslint-disable-line no-new-func
+  } catch (error) {
+    t.comment(`this Node has no using declarations: ${error.message}`)
+  }
+  if (usingDeclaration) {
+    const scoped = usingDeclaration(createCanvas)
+    t.throws(() => scoped.getParameter(scoped.MAX_TEXTURE_SIZE), /Invalid GL context/, 'a using declaration destroys the context when its block ends')
+  }
+  t.end()
+})

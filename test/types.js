@@ -30,6 +30,7 @@ function check (t, file, lib) {
 tape('types: a Node project without the DOM types', function (t) {
   check(t, 'node.mts', ['es2022'])
   check(t, 'require.cts', ['es2022'])
+  check(t, 'using.mts', ['es2022', 'esnext.disposable'])
   t.end()
 })
 

@@ -142,6 +142,11 @@ declare namespace createContext {
     arrayBuffer(): Promise<ArrayBuffer>;
   };
 
+  /**
+   * [Symbol.dispose], when the project's types declare Symbol.dispose, as TypeScript's esnext.disposable library and Node's types do.
+   */
+  type CanvasDisposal = SymbolConstructor extends { readonly dispose: infer D extends symbol } ? { [K in D]: () => void } : {};
+
   type CanvasEventListenerOptions = boolean | { capture?: boolean; once?: boolean; passive?: boolean; signal?: CanvasAbortSignal };
 
   /**
@@ -187,8 +192,9 @@ declare namespace createContext {
 
   /**
    * A canvas for a WebGL context, from createCanvas. Contexts' canvases are HeadlessCanvases too.
+   * Its [Symbol.dispose] destroys its context, so `using canvas = createCanvas(width, height)` frees the context when the block ends.
    */
-  interface HeadlessCanvas extends ContextCanvas {
+  interface HeadlessCanvas extends ContextCanvas, CanvasDisposal {
     /**
      * Resolves to the same PNG as toDataURL's in a Blob, as an OffscreenCanvas does, encoded without blocking the event loop. It takes the canvas as it is when called. A canvas with no pixels rejects with an `IndexSizeError` DOMException.
      */
