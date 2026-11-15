@@ -521,7 +521,7 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
   }
 
   _resizeDrawingBuffer (width, height) {
-    const prevFramebuffer = this._activeFramebuffers.draw
+    const { read: prevReadFramebuffer, draw: prevDrawFramebuffer } = this._activeFramebuffers
     const prevTexture = this._getActiveTexture(this.TEXTURE_2D)
     const prevRenderbuffer = this._activeRenderbuffer
 
@@ -592,8 +592,13 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
         drawingBuffer._depthStencil)
     }
 
-    // Restore previous binding state
-    this.bindFramebuffer(this.FRAMEBUFFER, prevFramebuffer)
+    // Restore previous binding state. WebGL2's read and draw framebuffers can differ, so each is bound back separately.
+    if (prevReadFramebuffer === prevDrawFramebuffer) {
+      this.bindFramebuffer(this.FRAMEBUFFER, prevDrawFramebuffer)
+    } else {
+      this.bindFramebuffer(this.READ_FRAMEBUFFER, prevReadFramebuffer)
+      this.bindFramebuffer(this.DRAW_FRAMEBUFFER, prevDrawFramebuffer)
+    }
     this.bindTexture(this.TEXTURE_2D, prevTexture)
     this.bindRenderbuffer(this.RENDERBUFFER, prevRenderbuffer)
   }
