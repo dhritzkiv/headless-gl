@@ -110,12 +110,33 @@ declare namespace createContext {
   type CanvasEventListener = ((event: CanvasEvent) => void) | { handleEvent(event: CanvasEvent): void };
 
   /**
+   * The event a canvas fires when getContext can't create a context, as browsers' WebGLContextEvent. Its statusMessage gives the reason.
+   */
+  type WebGLContextEvent = CanvasEvent & { readonly statusMessage: string };
+
+  type WebGLContextEventListener = ((event: WebGLContextEvent) => void) | { handleEvent(event: WebGLContextEvent): void };
+
+  interface WebGLContextEventInit {
+    bubbles?: boolean;
+    cancelable?: boolean;
+    composed?: boolean;
+    statusMessage?: string;
+  }
+
+  const WebGLContextEvent: {
+    readonly prototype: WebGLContextEvent;
+    new(type: string, eventInit?: WebGLContextEventInit): WebGLContextEvent;
+  };
+
+  /**
    * An AbortSignal, as the DOM's or Node's types declare it, or the member every signal has when the project has neither.
    */
   type CanvasAbortSignal = typeof globalThis extends { AbortSignal: { prototype: infer S } } ? S : { readonly aborted: boolean };
 
+  type CanvasEventListenerOptions = boolean | { capture?: boolean; once?: boolean; passive?: boolean; signal?: CanvasAbortSignal };
+
   /**
-   * The canvas of a context, which `gl.canvas` returns. It's an EventTarget.
+   * A canvas for a WebGL context, from createCanvas, or a context's canvas, which `gl.canvas` returns. It's an EventTarget.
    */
   interface HeadlessCanvas {
     /**
@@ -129,13 +150,37 @@ declare namespace createContext {
      */
     height: number;
     /**
+     * Creates the canvas's context the first time, as a `<canvas>` does: `'webgl'` and the legacy `'experimental-webgl'` give a WebGL1 context, and `'webgl2'` a WebGL2 one. Later calls return that context, or null for the other version, and only the first call's attributes count. Other ids give null.
+     * When the context can't be created, it fires `webglcontextcreationerror` with the reason in its `statusMessage`, and returns null.
+     * @throws {TypeError} for an invalid powerPreference.
+     */
+    getContext(contextId: "webgl" | "experimental-webgl", contextAttributes?: ContextAttributes): WebGLRenderingContext | null;
+    getContext(contextId: "webgl2", contextAttributes?: ContextAttributes): WebGL2RenderingContext | null;
+    getContext(contextId: string, contextAttributes?: ContextAttributes): WebGLRenderingContext | WebGL2RenderingContext | null;
+    /**
      * Encodes the drawing buffer as a PNG data URL, top row first and with alpha not premultiplied. Other image types give a PNG too, as browsers do for types they don't support. A canvas with no pixels gives `"data:,"`.
      */
     toDataURL(type?: string, quality?: unknown): string;
-    addEventListener(type: string, listener: CanvasEventListener | null, options?: boolean | { capture?: boolean; once?: boolean; passive?: boolean; signal?: CanvasAbortSignal }): void;
+    addEventListener(type: "webglcontextcreationerror" | "webglcontextlost" | "webglcontextrestored", listener: WebGLContextEventListener | null, options?: CanvasEventListenerOptions): void;
+    addEventListener(type: string, listener: CanvasEventListener | null, options?: CanvasEventListenerOptions): void;
+    removeEventListener(type: "webglcontextcreationerror" | "webglcontextlost" | "webglcontextrestored", listener: WebGLContextEventListener | null, options?: boolean | { capture?: boolean }): void;
     removeEventListener(type: string, listener: CanvasEventListener | null, options?: boolean | { capture?: boolean }): void;
     dispatchEvent(event: CanvasEvent): boolean;
   }
+
+  /**
+   * The class of canvases, for instanceof checks. Constructing one is the same as calling createCanvas.
+   */
+  const HeadlessCanvas: {
+    readonly prototype: HeadlessCanvas;
+    new(width: number, height: number): HeadlessCanvas;
+  };
+
+  /**
+   * Creates a canvas without a context, which its getContext creates, as on an OffscreenCanvas.
+   * @throws {TypeError} if `width` or `height` isn't an integer from 0 to `Number.MAX_SAFE_INTEGER`.
+   */
+  function createCanvas(width: number, height: number): HeadlessCanvas;
 
   interface STACKGL_destroy_context {
     destroy(): void;

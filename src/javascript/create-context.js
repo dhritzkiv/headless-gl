@@ -27,7 +27,7 @@ function powerPreference (options) {
   return value
 }
 
-// Creates a context with a drawing buffer of the canvas's size, no larger than the GPU allows, and makes it the canvas's context.
+// Creates a context with a drawing buffer of the canvas's size, at least 1x1 and no larger than the GPU allows, and makes it the canvas's context.
 // It throws an Error with the code HEADLESS_GL_CONTEXT_CREATION_FAILED when the context can't be created, and a TypeError for an invalid powerPreference.
 function createContextFor (canvas, attributes, createWebGL2Context) {
   const contextAttributes = new WebGLContextAttributes(
@@ -111,8 +111,8 @@ function createContextFor (canvas, attributes, createWebGL2Context) {
 
   // Allocate framebuffer, no larger than the GPU allows
   const [maxWidth, maxHeight] = ctx._maxDrawingBufferSize()
-  const width = Math.min(canvas.width, maxWidth)
-  const height = Math.min(canvas.height, maxHeight)
+  const width = Math.min(Math.max(canvas.width, 1), maxWidth)
+  const height = Math.min(Math.max(canvas.height, 1), maxHeight)
   ctx.drawingBufferWidth = width
   ctx.drawingBufferHeight = height
   ctx._allocateDrawingBuffer(width, height)

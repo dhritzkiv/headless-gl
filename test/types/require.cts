@@ -6,4 +6,7 @@ const isWebGL2: boolean = gl instanceof createGL.WebGL2RenderingContext
 const context: createGL.WebGL2RenderingContext = gl
 context.getExtension('STACKGL_destroy_context').destroy()
 
+const canvas: createGL.HeadlessCanvas = createGL.createCanvas(1, 1)
+const fromCanvas: createGL.WebGLRenderingContext | null = canvas.getContext('webgl')
+
 export { isWebGL2 }

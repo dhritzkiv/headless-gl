@@ -62,7 +62,7 @@ Node.js versions 22 and up are tested and supported.
 
 ## API
 
-`headless-gl` exports one function which you can use to create a WebGL context with the given context attributes:
+`headless-gl` exports a function which you can use to create a WebGL context with the given context attributes, and [`createCanvas`](#canvases), which creates a canvas whose `getContext` creates one, as in browsers:
 
 ```javascript
 const createGL = require('gl')
@@ -77,9 +77,7 @@ const gl = createGL(width, height)
 
 If `width` or `height` is larger than the GPU allows, the drawing buffer is made as large as it allows, as in browsers, and `gl.drawingBufferWidth` and `gl.drawingBufferHeight` give its size. The `STACKGL_resize_drawingbuffer` extension does the same.
 
-Every context has a `canvas`, as in browsers. Setting `gl.canvas.width` or `gl.canvas.height` resizes the drawing buffer and clears it, even when the size doesn't change. As on an `OffscreenCanvas`, a size that isn't an integer from 0 up throws a `TypeError`. A canvas with a width or height of 0 has a 1×1 drawing buffer. Assigning `gl.canvas` replaces what it returns, for libraries that wrap a context in a canvas of their own.
-
-`gl.canvas.toDataURL()` encodes the drawing buffer as a PNG data URL, with the top row first and alpha not premultiplied. Other image types give a PNG too, as browsers do for types they don't support.
+Every context has a `canvas`, as in browsers, which [Canvases](#canvases) describes.
 
 **Returns** A new `WebGLRenderingContext` object, or a `WebGL2RenderingContext` when `options.createWebGL2Context` is `true`.
 
@@ -95,6 +93,29 @@ gl instanceof WebGL2RenderingContext
 ```
 
 They can't be constructed directly.
+
+### Canvases
+
+`createCanvas(width, height)` creates a canvas without a context, for code that calls `getContext` itself, as code written for browsers does:
+
+```javascript
+const { createCanvas } = require('gl')
+// or: import { createCanvas } from 'gl'
+
+const canvas = createCanvas(256, 256)
+const gl = canvas.getContext('webgl2', { alpha: false })
+```
+
+* `getContext('webgl')`, or the legacy `'experimental-webgl'`, creates a WebGL1 context with the context attributes it's given, and `getContext('webgl2')` a WebGL2 one. Later calls return the same context, or `null` for the other version, and other context ids give `null`, as in browsers.
+* When the context can't be created, `getContext` fires a `webglcontextcreationerror` event at the canvas, whose `statusMessage` gives the reason, and returns `null`, as browsers do, where `createGL` throws. The event's class is exported as `WebGLContextEvent`.
+* As on an `OffscreenCanvas`, `width` and `height` are required, and a size that isn't an integer from 0 up throws a `TypeError`. A canvas 0 wide or high has a 1×1 drawing buffer, while `createGL` needs at least 1×1.
+* The canvas's class is exported as `HeadlessCanvas`, for `instanceof` checks, and `new HeadlessCanvas(width, height)` is the same as `createCanvas(width, height)`.
+
+Every context has a canvas, which `gl.canvas` returns, including contexts from `createGL`:
+
+* Setting its `width` or `height` resizes the drawing buffer and clears it, even when the size doesn't change.
+* `toDataURL()` encodes the drawing buffer as a PNG data URL, with the top row first and alpha not premultiplied. Other image types give a PNG too, as browsers do for types they don't support. A canvas without a context gives a transparent image, and one 0 wide or high gives `"data:,"`.
+* Assigning `gl.canvas` replaces what it returns, for libraries that wrap a context in a canvas of their own.
 
 ### TypeScript
 

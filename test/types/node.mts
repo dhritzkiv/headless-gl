@@ -1,5 +1,5 @@
 // A Node project without the DOM types, importing gl as an ES module.
-import createGL, { WebGLRenderingContext, WebGL2RenderingContext } from 'gl'
+import createGL, { createCanvas, HeadlessCanvas, WebGLContextEvent, WebGLRenderingContext, WebGL2RenderingContext } from 'gl'
 import type { GLenum, WebGLTexture } from 'gl'
 
 const gl = createGL(1, 1)
@@ -21,6 +21,18 @@ const dataURL: string = gl.canvas.toDataURL()
 gl.canvas.addEventListener('webglcontextlost', (event) => event.preventDefault())
 // @ts-expect-error The canvas has no DOM layout members.
 gl.canvas.getBoundingClientRect()
+
+const canvas: HeadlessCanvas = createCanvas(2, 2)
+const fromCanvas: WebGL2RenderingContext | null = canvas.getContext('webgl2', { alpha: false })
+const fromCanvas1: WebGLRenderingContext | null = canvas.getContext('experimental-webgl')
+// @ts-expect-error getContext returns null when it can't create the context.
+const notNull: WebGL2RenderingContext = canvas.getContext('webgl2')
+canvas.addEventListener('webglcontextcreationerror', (event) => {
+  const message: string = event.statusMessage
+})
+const isCanvas: boolean = canvas instanceof HeadlessCanvas
+const event: WebGLContextEvent = new WebGLContextEvent('webglcontextcreationerror', { statusMessage: 'No GPU.' })
+canvas.dispatchEvent(event)
 // @ts-expect-error WebGL1 contexts have no WebGL2 methods.
 gl.createVertexArray()
 

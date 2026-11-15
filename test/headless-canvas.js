@@ -214,3 +214,103 @@ tape('canvas: toDataURL keeps the GL state as it was', function (t) {
   destroy(gl2)
   t.end()
 })
+
+tape('canvas: createCanvas makes a canvas without a context', function (t) {
+  const { createCanvas, HeadlessCanvas } = createContext
+  const canvas = createCanvas(3, 2)
+  t.ok(canvas instanceof HeadlessCanvas, 'createCanvas makes a HeadlessCanvas')
+  t.ok(new HeadlessCanvas(3, 2) instanceof HeadlessCanvas, 'which can also be constructed, as an OffscreenCanvas can')
+  t.deepEqual([canvas.width, canvas.height], [3, 2], 'with the size it\'s given')
+  t.deepEqual([createCanvas(0, 0).width, createCanvas(0, 0).height], [0, 0], 'which can be 0')
+  t.throws(() => createCanvas(), TypeError, 'and must be given, as on an OffscreenCanvas')
+  t.throws(() => createCanvas(1, -1), TypeError, 'as an integer from 0 up')
+
+  canvas.width = 4
+  t.equal(canvas.width, 4, 'its size can be set before it has a context')
+  const image = decodeDataURL(t, canvas.toDataURL())
+  t.deepEqual([image.width, image.height], [4, 2], 'and toDataURL gives an image of its size')
+  t.ok(image.data.every(value => value === 0), 'which is transparent black')
+  t.equal(createCanvas(0, 2).toDataURL(), 'data:,', 'or "data:," when it has no pixels')
+  t.equal(createCanvas(Number.MAX_SAFE_INTEGER, 2).toDataURL(), 'data:,', 'or too many to hold in memory')
+  t.end()
+})
+
+tape('canvas: getContext creates the canvas\'s context once', function (t) {
+  const { createCanvas, WebGLRenderingContext, WebGL2RenderingContext } = createContext
+  const canvas = createCanvas(3, 2)
+  const gl = canvas.getContext('webgl', { alpha: false })
+  t.ok(gl instanceof WebGLRenderingContext, 'getContext(\'webgl\') creates a WebGL1 context')
+  t.equal(gl.canvas, canvas, 'whose canvas is the canvas')
+  t.deepEqual([gl.drawingBufferWidth, gl.drawingBufferHeight], [3, 2], 'with a drawing buffer of the canvas\'s size')
+  t.equal(gl.getContextAttributes().alpha, false, 'and the attributes it\'s given')
+  t.equal(canvas.getContext('webgl', { alpha: true }), gl, 'asking again returns the same context')
+  t.equal(gl.getContextAttributes().alpha, false, 'with its first attributes, as in browsers')
+  t.equal(canvas.getContext('experimental-webgl'), gl, 'and so does the legacy \'experimental-webgl\'')
+  t.equal(canvas.getContext('webgl2'), null, 'asking for WebGL2 returns null')
+  canvas.width = 5
+  t.equal(gl.drawingBufferWidth, 5, 'setting the canvas\'s size resizes the context\'s drawing buffer')
+  destroy(gl)
+
+  const canvas2 = createCanvas(2, 2)
+  const gl2 = canvas2.getContext('webgl2')
+  t.ok(gl2 instanceof WebGL2RenderingContext, 'getContext(\'webgl2\') creates a WebGL2 context')
+  t.equal(canvas2.getContext('webgl2'), gl2, 'which asking again returns')
+  t.equal(canvas2.getContext('webgl'), null, 'and asking for WebGL1 returns null')
+  destroy(gl2)
+
+  const fromCreateGL = createContext(2, 2)
+  t.equal(fromCreateGL.canvas.getContext('webgl'), fromCreateGL, 'the canvas of a context from createContext returns that context')
+  destroy(fromCreateGL)
+  t.end()
+})
+
+tape('canvas: getContext returns null for context ids it doesn\'t support', function (t) {
+  const canvas = createContext.createCanvas(2, 2)
+  for (const contextId of ['2d', 'bitmaprenderer', 'webgpu', 'WebGL', 'webgl1', '']) {
+    t.equal(canvas.getContext(contextId), null, `'${contextId}' gives null, as on a <canvas>`)
+  }
+  t.throws(() => canvas.getContext(), TypeError, 'and no id throws a TypeError')
+  const gl = canvas.getContext('webgl')
+  t.ok(gl, 'which leaves the canvas without a context, so it can still have one')
+  destroy(gl)
+  t.end()
+})
+
+tape('canvas: a canvas 0 wide or high gets a 1x1 drawing buffer', function (t) {
+  const canvas = createContext.createCanvas(0, 0)
+  const gl = canvas.getContext('webgl')
+  t.deepEqual([gl.drawingBufferWidth, gl.drawingBufferHeight], [1, 1], 'as in browsers')
+  t.equal(gl.getError(), gl.NO_ERROR, 'with no GL errors')
+  destroy(gl)
+  t.end()
+})
+
+tape('canvas: getContext fires webglcontextcreationerror when the context can\'t be created', function (t) {
+  const { createCanvas, WebGLContextEvent } = createContext
+  const canvas = createCanvas(2, 2)
+  // Stands in for a GPU that can't make a context.
+  canvas._createContext = function () {
+    const error = new Error('No GPU for you.')
+    error.code = 'HEADLESS_GL_CONTEXT_CREATION_FAILED'
+    throw error
+  }
+  const events = []
+  canvas.addEventListener('webglcontextcreationerror', function (event) {
+    events.push(event)
+  })
+  t.equal(canvas.getContext('webgl'), null, 'getContext returns null')
+  t.equal(events.length, 1, 'after firing webglcontextcreationerror once')
+  t.ok(events[0] instanceof WebGLContextEvent, 'with a WebGLContextEvent')
+  t.equal(Object.prototype.toString.call(events[0]), '[object WebGLContextEvent]', 'tagged as in browsers')
+  t.equal(events[0].statusMessage, 'No GPU for you.', 'whose statusMessage gives the reason')
+  t.ok(events[0].cancelable, 'and which is cancelable, as the WebGL spec says')
+
+  delete canvas._createContext
+  const gl = canvas.getContext('webgl')
+  t.ok(gl, 'a later call can still create the context')
+  destroy(gl)
+
+  t.throws(() => createCanvas(1, 1).getContext('webgl', { powerPreference: 'fast' }), TypeError, 'an invalid powerPreference throws a TypeError, as in browsers, instead of firing the event')
+  t.equal(new WebGLContextEvent('webglcontextlost').statusMessage, '', 'a WebGLContextEvent\'s statusMessage is empty by default')
+  t.end()
+})

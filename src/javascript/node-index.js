@@ -1,5 +1,5 @@
 const { createContextFor, flag } = require('./create-context')
-const { HeadlessCanvas } = require('./headless-canvas')
+const { HeadlessCanvas, WebGLContextEvent } = require('./headless-canvas')
 
 function createContext (width, height, attributes, options) {
   if (!((width | 0) > 0 && (height | 0) > 0)) {
@@ -9,4 +9,12 @@ function createContext (width, height, attributes, options) {
   return createContextFor(canvas, attributes, flag(options, 'createWebGL2Context', false))
 }
 
+// Creates a canvas without a context, which getContext gives it, as on an OffscreenCanvas.
+function createCanvas (width, height) {
+  return new HeadlessCanvas(width, height)
+}
+
 module.exports = createContext
+module.exports.createCanvas = createCanvas
+module.exports.HeadlessCanvas = HeadlessCanvas
+module.exports.WebGLContextEvent = WebGLContextEvent
