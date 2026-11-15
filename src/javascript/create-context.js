@@ -59,6 +59,7 @@ function createContextFor (canvas, attributes, createWebGL2Context) {
   ctx._contextAttributes = contextAttributes
   ctx._canvas = canvas
 
+  ctx._destroyed = false
   ctx._extensions = {}
   ctx._programs = {}
   ctx._shaders = {}

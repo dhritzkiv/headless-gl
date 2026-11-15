@@ -201,6 +201,11 @@ function unwrapContext (wrapper) {
   return wrappedContexts.get(wrapper)
 }
 
+// Transparent black pixels, as ImageData holds them, for a canvas without a context to read them from.
+function transparentImage (width, height) {
+  return { width, height, data: new Uint8ClampedArray(width * height * 4) }
+}
+
 // The method a HeadlessCanvas gives its pixels with, as imageData takes them. headless-canvas.js can't be required here without a cycle, so the canvas implements this instead.
 const canvasImage = Symbol('canvasImage')
 
@@ -215,7 +220,7 @@ function imageData (pixels) {
       for (const contextId of ['webgl2', 'webgl']) {
         const ctx = unwrapContext(pixels.getContext(contextId))
         if (ctx) {
-          return ctx._drawingBufferImage()
+          return ctx._destroyed ? transparentImage(ctx.drawingBufferWidth, ctx.drawingBufferHeight) : ctx._drawingBufferImage()
         }
       }
     }
@@ -1888,6 +1893,8 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
 
   destroy () {
     super.destroy()
+    // Every native call throws after this, so the canvas checks it.
+    this._destroyed = true
   }
 
   detachShader (program, shader) {
@@ -4541,4 +4548,4 @@ for (const [key, value] of Object.entries(gl)) {
 }
 Object.assign(WebGL2RenderingContext, NativeWebGL.webgl2Constants)
 
-module.exports = { WebGLRenderingContext, WebGL2RenderingContext, WebGLRenderingContextHelper, wrapContext, unwrapContext, canvasImage }
+module.exports = { WebGLRenderingContext, WebGL2RenderingContext, WebGLRenderingContextHelper, wrapContext, unwrapContext, canvasImage, transparentImage }

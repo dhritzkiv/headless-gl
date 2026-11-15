@@ -1,6 +1,6 @@
 const { createContextFor } = require('./create-context')
 const { encodePNG, encodePNGAsync } = require('./png')
-const { WebGL2RenderingContext, canvasImage, unwrapContext } = require('./webgl-rendering-context')
+const { WebGL2RenderingContext, canvasImage, transparentImage, unwrapContext } = require('./webgl-rendering-context')
 
 // The context ids getContext takes, as a <canvas> does, and whether each makes a WebGL2 context.
 const CONTEXT_IDS = new Map([['webgl', false], ['experimental-webgl', false], ['webgl2', true]])
@@ -136,17 +136,22 @@ class HeadlessCanvas extends EventTarget {
     return createContextFor(this, attributes, createWebGL2Context)
   }
 
-  // The canvas's pixels as ImageData holds them, for toDataURL and texture uploads: its context's drawing buffer, or transparent black before it has a context.
+  // The canvas's pixels as ImageData holds them, for the image exports and texture uploads: its context's drawing buffer, or transparent black before it has a context or once that's destroyed.
   [canvasImage] () {
-    if (this._context) {
-      return unwrapContext(this._context)._drawingBufferImage()
-    }
-    return { width: this._width, height: this._height, data: new Uint8ClampedArray(this._width * this._height * 4) }
+    const ctx = this._liveContext()
+    return ctx ? ctx._drawingBufferImage() : transparentImage(this._width, this._height)
+  }
+
+  // The context, unless the canvas has none or it's been destroyed, after which its native calls throw.
+  _liveContext () {
+    const ctx = this._context && unwrapContext(this._context)
+    return ctx && !ctx._destroyed ? ctx : null
   }
 
   _resetDrawingBuffer () {
-    if (this._context) {
-      unwrapContext(this._context)._resetDrawingBuffer(this._width, this._height)
+    const ctx = this._liveContext()
+    if (ctx) {
+      ctx._resetDrawingBuffer(this._width, this._height)
     }
   }
 }

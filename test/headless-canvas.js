@@ -502,3 +502,29 @@ tape('canvas: style is an object that nothing reads', function (t) {
   destroy(gl)
   t.end()
 })
+
+tape('canvas: a destroyed context\'s canvas can still be resized and exported', function (t) {
+  const gl = createContext(2, 2)
+  gl.clearColor(1, 0, 0, 1)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+  const canvas = gl.canvas
+  destroy(gl)
+  canvas.width = 3
+  t.equal(canvas.width, 3, 'setting its size doesn\'t throw')
+  const image = decodeDataURL(t, canvas.toDataURL())
+  t.deepEqual([image.width, image.height], [3, 2], 'and toDataURL gives an image of its size')
+  t.ok(image.data.every(value => value === 0), 'which is transparent black, as for a canvas without a context')
+  t.equal(canvas.getContext('webgl'), gl, 'getContext still returns the destroyed context, as browsers return a lost one')
+
+  const other = createContext(1, 1)
+  const texture = other.createTexture()
+  other.bindTexture(other.TEXTURE_2D, texture)
+  other.texImage2D(other.TEXTURE_2D, 0, other.RGBA, other.RGBA, other.UNSIGNED_BYTE, canvas)
+  t.deepEqual(readTexture(other, texture, 3, 2), new Array(24).fill(0), 'and uploading it gives transparent black too')
+  const wrapper = { width: 2, height: 2, getContext: contextId => contextId === 'webgl' ? gl : null }
+  other.texImage2D(other.TEXTURE_2D, 0, other.RGBA, other.RGBA, other.UNSIGNED_BYTE, wrapper)
+  t.deepEqual(readTexture(other, texture, 2, 2), new Array(16).fill(0), 'as does another library\'s canvas that wraps it')
+  t.equal(other.getError(), other.NO_ERROR, 'no GL errors')
+  destroy(other)
+  t.end()
+})
