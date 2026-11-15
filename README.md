@@ -72,12 +72,14 @@ const gl = createGL(width, height)
 
 * `width` is the width of the drawing buffer
 * `height` is the height of the drawing buffer
-* `contextAttributes` is an optional object whose properties are the [WebGL context attributes](https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.2). Only `alpha`, `depth` and `stencil` change the drawing buffer, and `antialias` is always off. Nothing composites the drawing buffer in Node, so it's always preserved whatever `preserveDrawingBuffer` is. The rest, such as `premultipliedAlpha`, only change what `getContextAttributes` reports.
+* `contextAttributes` is an optional object whose properties are the [WebGL context attributes](https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.2). Only `alpha`, `depth` and `stencil` change the drawing buffer, and `antialias` is always off. Nothing composites the drawing buffer in Node, so it's always preserved whatever `preserveDrawingBuffer` is. `premultipliedAlpha` says whether `gl.canvas.toDataURL()` takes the drawing buffer's colors to be premultiplied by alpha. The rest only change what `getContextAttributes` reports.
 * `options` is an optional object whose `createWebGL2Context` property creates a WebGL2 context when it's `true`.
 
 If `width` or `height` is larger than the GPU allows, the drawing buffer is made as large as it allows, as in browsers, and `gl.drawingBufferWidth` and `gl.drawingBufferHeight` give its size. The `STACKGL_resize_drawingbuffer` extension does the same.
 
 Every context has a `canvas`, as in browsers. Setting `gl.canvas.width` or `gl.canvas.height` resizes the drawing buffer and clears it, even when the size doesn't change. As on an `OffscreenCanvas`, a size that isn't an integer from 0 up throws a `TypeError`. A canvas with a width or height of 0 has a 1×1 drawing buffer. Assigning `gl.canvas` replaces what it returns, for libraries that wrap a context in a canvas of their own.
+
+`gl.canvas.toDataURL()` encodes the drawing buffer as a PNG data URL, with the top row first and alpha not premultiplied. Other image types give a PNG too, as browsers do for types they don't support.
 
 **Returns** A new `WebGLRenderingContext` object, or a `WebGL2RenderingContext` when `options.createWebGL2Context` is `true`.
 

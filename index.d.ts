@@ -128,6 +128,10 @@ declare namespace createContext {
      * @throws {TypeError} when set to something that isn't an integer from 0 to `Number.MAX_SAFE_INTEGER`, as on an OffscreenCanvas.
      */
     height: number;
+    /**
+     * Encodes the drawing buffer as a PNG data URL, top row first and with alpha not premultiplied. Other image types give a PNG too, as browsers do for types they don't support. A canvas with no pixels gives `"data:,"`.
+     */
+    toDataURL(type?: string, quality?: unknown): string;
     addEventListener(type: string, listener: CanvasEventListener | null, options?: boolean | { capture?: boolean; once?: boolean; passive?: boolean; signal?: CanvasAbortSignal }): void;
     removeEventListener(type: string, listener: CanvasEventListener | null, options?: boolean | { capture?: boolean }): void;
     dispatchEvent(event: CanvasEvent): boolean;

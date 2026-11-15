@@ -1,3 +1,4 @@
+const { encodePNG } = require('./png')
 const { unwrapContext } = require('./webgl-rendering-context')
 
 // Converts a size as WebIDL's [EnforceRange] unsigned long long does, which is how OffscreenCanvas takes them: NaN, the infinities and sizes out of range throw a TypeError, and other numbers are truncated.
@@ -36,6 +37,15 @@ class HeadlessCanvas extends EventTarget {
   set height (value) {
     this._height = toCanvasSize(value, 'height')
     this._resetDrawingBuffer()
+  }
+
+  // Always a PNG, which browsers also give for an image type they don't support, so the type and quality are ignored. A canvas without pixels gives "data:,", as in browsers.
+  toDataURL (type, quality) {
+    if (this._width === 0 || this._height === 0) {
+      return 'data:,'
+    }
+    const { width, height, data } = unwrapContext(this._context)._drawingBufferImage()
+    return `data:image/png;base64,${encodePNG(width, height, data).toString('base64')}`
   }
 
   _resetDrawingBuffer () {

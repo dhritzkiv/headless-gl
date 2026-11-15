@@ -622,6 +622,68 @@ class WebGLRenderingContextHelper extends NativeWebGLRenderingContext {
     this.drawingBufferHeight = height
   }
 
+  // Reads the drawing buffer as a canvas holds it for toDataURL: RGBA with 8 bits per channel, the top row first and alpha not premultiplied, as in ImageData.
+  // Whatever framebuffer, read buffer, pixel pack buffer and pack parameters are set stay set, and so do GL errors.
+  _drawingBufferImage () {
+    const width = this.drawingBufferWidth
+    const height = this.drawingBufferHeight
+    const pixels = new Uint8Array(width * height * 4)
+    const isWebGL2 = this._isWebGL2()
+    const readTarget = isWebGL2 ? this.READ_FRAMEBUFFER : this.FRAMEBUFFER
+
+    const values = new Map([[this.PACK_ALIGNMENT, 1]])
+    if (isWebGL2) {
+      values.set(this.PACK_ROW_LENGTH, 0)
+      values.set(this.PACK_SKIP_PIXELS, 0)
+      values.set(this.PACK_SKIP_ROWS, 0)
+    }
+    const pnames = [...values.keys()]
+    const saved = pnames.map(pname => super.getParameter(pname))
+    const prevReadFramebuffer = this._activeFramebuffers.read
+    const prevPackBuffer = isWebGL2 ? super.getParameter(this.PIXEL_PACK_BUFFER_BINDING) : 0
+
+    this._saveError()
+    super.bindFramebuffer(readTarget, this._drawingBuffer._framebuffer)
+    const prevReadBuffer = isWebGL2 ? super.getParameter(this.READ_BUFFER) : 0
+    if (isWebGL2) {
+      super.readBuffer(this.BACK)
+      super.bindBuffer(this.PIXEL_PACK_BUFFER, 0)
+    }
+    for (const [pname, value] of values) {
+      super.pixelStorei(pname, value)
+    }
+    try {
+      super.readPixels(0, 0, width, height, this.RGBA, this.UNSIGNED_BYTE, pixels)
+    } finally {
+      pnames.forEach((pname, i) => super.pixelStorei(pname, saved[i] | 0))
+      if (isWebGL2) {
+        super.bindBuffer(this.PIXEL_PACK_BUFFER, prevPackBuffer | 0)
+        super.readBuffer(prevReadBuffer | 0)
+      }
+      this.bindFramebuffer(readTarget, prevReadFramebuffer)
+      super.getError()
+      this._restoreError(this.NO_ERROR)
+    }
+
+    // GL reads the bottom row first, and Uint8ClampedArray rounds and clamps the colors divided by alpha.
+    const rowLength = width * 4
+    const data = new Uint8ClampedArray(pixels.length)
+    for (let y = 0; y < height; ++y) {
+      data.set(pixels.subarray((height - 1 - y) * rowLength, (height - y) * rowLength), y * rowLength)
+    }
+    if (this._contextAttributes.premultipliedAlpha) {
+      for (let i = 0; i < data.length; i += 4) {
+        const alpha = data[i + 3]
+        if (alpha !== 255) {
+          for (let c = i; c < i + 3; ++c) {
+            data[c] = alpha === 0 ? 0 : data[c] * 255 / alpha
+          }
+        }
+      }
+    }
+    return { width, height, data }
+  }
+
   _restoreError (lastError) {
     const topError = this._errorStack.pop()
     if (topError === this.NO_ERROR) {
