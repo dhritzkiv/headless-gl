@@ -428,9 +428,7 @@ WebGLRenderingContext::WebGLRenderingContext(int width, int height, bool createW
     webGLToANGLEExtensions.insert({"OES_element_index_uint", {"GL_OES_element_index_uint"}});
     webGLToANGLEExtensions.insert({"EXT_blend_minmax", {"GL_EXT_blend_minmax"}});
     webGLToANGLEExtensions.insert({"OES_standard_derivatives", {"GL_OES_standard_derivatives"}});
-    webGLToANGLEExtensions.insert({"OES_texture_float",
-                                   {"GL_OES_texture_float", "GL_CHROMIUM_color_buffer_float_rgba",
-                                    "GL_CHROMIUM_color_buffer_float_rgb"}});
+    webGLToANGLEExtensions.insert({"OES_texture_float", {"GL_OES_texture_float"}});
     webGLToANGLEExtensions.insert({"WEBGL_draw_buffers", {"GL_EXT_draw_buffers"}});
     // Reading floats back with readPixels needs ANGLE's OES_texture_float too. The JavaScript still rejects float textures until WebGL's OES_texture_float is enabled.
     webGLToANGLEExtensions.insert(
@@ -453,7 +451,11 @@ WebGLRenderingContext::WebGLRenderingContext(int width, int height, bool createW
   if (createWebGL2Context) {
     webGLToOptionalANGLEExtensions.insert({"EXT_color_buffer_float", {"GL_EXT_float_blend"}});
   } else {
-    webGLToOptionalANGLEExtensions.insert({"OES_texture_float", {"GL_EXT_float_blend"}});
+    // OES_texture_float also makes float textures renderable where ANGLE can, as browsers do for content written before WEBGL_color_buffer_float. The conformance tests allow float textures that can't be rendered to, as with OpenGL ES drivers and RGB32F.
+    webGLToOptionalANGLEExtensions.insert(
+        {"OES_texture_float",
+         {"GL_CHROMIUM_color_buffer_float_rgba", "GL_CHROMIUM_color_buffer_float_rgb",
+          "GL_EXT_float_blend"}});
     webGLToOptionalANGLEExtensions.insert({"WEBGL_color_buffer_float", {"GL_EXT_float_blend"}});
     // As the OES_texture_half_float spec requires, it also enables EXT_color_buffer_half_float where ANGLE supports it.
     webGLToOptionalANGLEExtensions.insert(
@@ -1280,12 +1282,27 @@ std::vector<uint8_t> WebGLRenderingContext::unpackPixels(GLenum type, GLenum for
   return unpacked;
 }
 
-void CallTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
-                    GLsizei height, GLint border, GLenum format, GLenum type, GLsizei bufSize,
-                    const void *pixels) {
+// On WebGL1, ANGLE takes a sized float format only once its extension for rendering to it is on. OpenGL ES drivers can't render to RGB32F, so there RGB float textures keep the unsized format.
+bool CanSizeFloatingPointFormat(WebGLRenderingContext *inst, GLenum format) {
+  if (inst->isWebGL2) {
+    return true;
+  }
+  switch (format) {
+  case GL_RGBA:
+    return inst->enabledExtensions.count("GL_CHROMIUM_color_buffer_float_rgba") != 0;
+  case GL_RGB:
+    return inst->enabledExtensions.count("GL_CHROMIUM_color_buffer_float_rgb") != 0;
+  default:
+    return false;
+  }
+}
+
+void CallTexImage2D(WebGLRenderingContext *inst, GLenum target, GLint level, GLenum internalformat,
+                    GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type,
+                    GLsizei bufSize, const void *pixels) {
   // WebGL1 float textures use an unsized format with GL_FLOAT, which ANGLE accepts but only makes color-renderable with the sized format.
   // Uploading with the sized format keeps the texture mutable, unlike texture storage, so it can be resized, mipmapped and used for cube map faces.
-  if (type == GL_FLOAT) {
+  if (type == GL_FLOAT && CanSizeFloatingPointFormat(inst, internalformat)) {
     internalformat = SizeFloatingPointFormat(internalformat);
   }
   glTexImage2DRobustANGLE(target, level, internalformat, width, height, border, format, type,
@@ -1324,7 +1341,8 @@ GL_METHOD(TexImage2D) {
   if (info[8]->IsNumber()) {
     const void *offset;
     if (GetUnpackBufferOffset(inst, info[8], &offset)) {
-      CallTexImage2D(target, level, internalformat, width, height, border, format, type, 0, offset);
+      CallTexImage2D(inst, target, level, internalformat, width, height, border, format, type, 0,
+                     offset);
     }
     return;
   }
@@ -1334,12 +1352,12 @@ GL_METHOD(TexImage2D) {
     std::vector<uint8_t> unpacked =
         inst->unpackPixels(type, format, width, height, *pixels, pixels.length());
     if (!unpacked.empty()) {
-      CallTexImage2D(target, level, internalformat, width, height, border, format, type,
+      CallTexImage2D(inst, target, level, internalformat, width, height, border, format, type,
                      unpacked.size(), unpacked.data());
       return;
     }
   }
-  CallTexImage2D(target, level, internalformat, width, height, border, format, type,
+  CallTexImage2D(inst, target, level, internalformat, width, height, border, format, type,
                  pixels.length(), *pixels);
 }
 
